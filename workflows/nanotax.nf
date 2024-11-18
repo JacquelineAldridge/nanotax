@@ -5,6 +5,9 @@
 */
 include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
+include { NANOQ as NANOQ_FILTER  } from '../modules/nf-core/nanoq/main'
+include { NANOQ as NANOQ_QC_RAW  } from '../modules/nf-core/nanoq/main'
+include { FILTLONG               } from '../modules/nf-core/filtlong/main'
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
 include { softwareVersionsToYAML } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -24,14 +27,25 @@ workflow NANOTAX {
 
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
-    //
-    // MODULE: Run FastQC
-    //
-    FASTQC (
-        ch_samplesheet
-    )
-    ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]})
-    ch_versions = ch_versions.mix(FASTQC.out.versions.first())
+
+    if(params.qc.run){
+        FASTQC (
+            ch_samplesheet
+        )
+
+        NANOQ_FILTER(ch_samplesheet,'fastq.gz')
+        NANOQ_QC_RAW(ch_samplesheet,'fastq.gz')
+
+        if(params.qc.subsampling>0){
+            ch_mix = NANOQ_FILTER.out.reads.map{it -> [it[0],[],it[1]]}
+            FILTLONG(ch_mix)
+            ch_versions.mix(FILTLONG.out.versions.first())
+        }
+
+        ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]},NANOQ_QC_RAW.out.stats.collect{it[1]},NANOQ_FILTER.out.stats.collect{it[1]})
+        ch_versions = ch_versions.mix(FASTQC.out.versions.first(),NANOQ_FILTER.out.versions.first())
+    
+    }
 
     //
     // Collate and save software versions
