@@ -5,6 +5,43 @@
     "description": "A pipeline for the characterization of microbial communities with Nanopore",
     "type": "object",
     "$defs": {
+        "quality_check_options": {
+            "title": "Quality check options",
+            "type": "object",
+            "description": "",
+            "default": "",
+            "properties": {
+                "qc.run": {
+                    "type": "boolean",
+                    "default": true
+                },
+                "qc.min_length": {
+                    "type": "number",
+                    "default": 1000,
+                    "description": "Minimum length of reads must have to be retained"
+                },
+                "qc.max_length": {
+                    "type": "number",
+                    "default": 2000,
+                    "description": "Maximun length of reads must have to be retained"
+                },
+                "qc.min_qscore": {
+                    "type": "number",
+                    "default": 15,
+                    "description": "Minimum phred quality value"
+                },
+                "qc.subsampling": {
+                    "type": "number",
+                    "default": 100000,
+                    "description": "Number of reads to subsampling"
+                },
+                "qc.save_reads": {
+                    "type": "boolean",
+                    "description": "Save reads after quality filters and subsampling"
+                }
+            },
+            "required": ["run"]
+        },
         "input_output_options": {
             "title": "Input/output options",
             "type": "object",
@@ -185,9 +222,11 @@
     },
     "allOf": [
         {
+            "$ref": "#/$defs/quality_check_options"
+        },
+        {
             "$ref": "#/$defs/input_output_options"
         },
-        
         {
             "$ref": "#/$defs/institutional_config_options"
         },
