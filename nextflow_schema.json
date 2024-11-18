@@ -11,31 +11,31 @@
             "description": "",
             "default": "",
             "properties": {
-                "qc.run": {
+                "run": {
                     "type": "boolean",
                     "default": true
                 },
-                "qc.min_length": {
+                "min_length": {
                     "type": "number",
                     "default": 1000,
                     "description": "Minimum length of reads must have to be retained"
                 },
-                "qc.max_length": {
+                "max_length": {
                     "type": "number",
                     "default": 2000,
                     "description": "Maximun length of reads must have to be retained"
                 },
-                "qc.min_qscore": {
+                "min_qscore": {
                     "type": "number",
                     "default": 15,
                     "description": "Minimum phred quality value"
                 },
-                "qc.subsampling": {
+                "subsampling": {
                     "type": "number",
                     "default": 100000,
                     "description": "Number of reads to subsampling"
                 },
-                "qc.save_reads": {
+                "save_reads": {
                     "type": "boolean",
                     "description": "Save reads after quality filters and subsampling"
                 }
