@@ -69,14 +69,15 @@ workflow PIPELINE_INITIALISATION {
             meta, fastq,barcode,group ->
                 if (!barcode && !group) {
                     return [ meta.id, meta + [ pod5:false, group: false ], [ fastq ] ]
+                    
                 } else if (!barcode){
-                    return [ meta.id, meta + [ pod5:false, group: true ], [ fastq,group ] ]
+                    return [ meta.id, meta + [ pod5:false, group: group ], [ fastq ] ]
                 }
                 else if (!group){
                     return [ meta.id, meta + [ pod5:true, group: false ], [ barcode ] ]
                 }
                 else {
-                    return [ meta.id, meta + [ pod5:true, group:true ], [ barcode,group] ]
+                    return [ meta.id, meta + [ pod5:true, group:group ], [ barcode] ]
                 }
         }
         .groupTuple()
@@ -89,7 +90,6 @@ workflow PIPELINE_INITIALISATION {
         }
         .set { ch_samplesheet }
 
-    print(ch_samplesheet.view(  ))
     emit:
     samplesheet = ch_samplesheet
     versions    = ch_versions
