@@ -12,6 +12,7 @@ include { BLAST as BLASTCMD      } from '../modules/local/blast'
 include { MMSEQS_CREATE16SDB     } from '../modules/local/mmseqs/create16sdb'
 include { MMSEQS_EASYSEARCH      } from '../modules/nf-core/mmseqs/easysearch'
 include { SUMMARY_MMSEQS         } from '../modules/local/summarymmseqs'
+include { MERGE_AND_GROUP_SAMPLES } from '../modules/local/mergeandgroupsamples'
 
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -85,9 +86,8 @@ workflow NANOTAX {
     ch_mmseqs_output = MMSEQS_EASYSEARCH.out.tsv//.map{meta,tsv -> tsv}.collect()
     //ch_first_group = MMSEQS_EASYSEARCH.out.tsv.map{meta,tsv -> meta}.first()
     ch_groups_info = MMSEQS_EASYSEARCH.out.tsv.map{meta,tsv -> "${meta.id}:${meta.group}"}.collect()
-    print(ch_groups_info.view())
     SUMMARY_MMSEQS(ch_mmseqs_output)
-
+    MERGE_AND_GROUP_SAMPLES(SUMMARY_MMSEQS.out.summary_csv.collect())
     //SUMMARY_MMSEQS(ch_mmseqs_output,ch_groups_info)
 
     // Diversity
