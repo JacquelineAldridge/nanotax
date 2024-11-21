@@ -1,6 +1,6 @@
 process SUMMARY_MMSEQS {
     label 'process_single'
-
+    debug true
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
             'ghcr.io/dialvarezs/containers/polars:1.3.0' :
             'ghcr.io/dialvarezs/containers/polars:1.3.0' }"
@@ -11,6 +11,7 @@ process SUMMARY_MMSEQS {
 
     output:
     path("*.csv"), emit: summary_csv
+    path("taxlineage/${meta.id}_taxlineage.csv"), emit: taxlineage
     //ToDo: polars version
     //path "versions.yml"           , emit: versions
 
@@ -20,6 +21,7 @@ process SUMMARY_MMSEQS {
     script:
 
     """
+    mkdir taxlineage
     summary_mmseqs.py --db ${params.taxonomic_assignament.db_name} --mmseqs_tsv ${mmseqs_tsv} --min_aln ${params.taxonomic_assignament.min_aln} --min_identity ${params.taxonomic_assignament.min_identity} --group ${meta.group} --sample ${meta.id}
 
     """

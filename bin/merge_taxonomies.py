@@ -39,7 +39,6 @@ def main(argv=None):
                        # .assign(sample=re.search(r"(.*)_T1",f) .group(1))
                         )
                         for f in glob.glob(f"*{category}.csv")])
-        
         df.collect().pivot("sample", index=category, values="perc").fill_null(0).write_csv(f"sample/{category}.csv")
         if("group" in df.collect().columns):
             df_gby = (df

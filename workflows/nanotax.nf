@@ -13,6 +13,8 @@ include { MMSEQS_CREATE16SDB     } from '../modules/local/mmseqs/create16sdb'
 include { MMSEQS_EASYSEARCH      } from '../modules/nf-core/mmseqs/easysearch'
 include { SUMMARY_MMSEQS         } from '../modules/local/summarymmseqs'
 include { MERGE_AND_GROUP_SAMPLES } from '../modules/local/mergeandgroupsamples'
+include { PLOT_CORE              } from '../modules/local/plotcore'
+include { PLOT_TAXONOMY          } from '../modules/local/plottaxonomy'
 
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -88,8 +90,14 @@ workflow NANOTAX {
     ch_groups_info = MMSEQS_EASYSEARCH.out.tsv.map{meta,tsv -> "${meta.id}:${meta.group}"}.collect()
     SUMMARY_MMSEQS(ch_mmseqs_output)
     MERGE_AND_GROUP_SAMPLES(SUMMARY_MMSEQS.out.summary_csv.collect())
-    //SUMMARY_MMSEQS(ch_mmseqs_output,ch_groups_info)
 
+    // Plots for Taxonomic assignment
+    PLOT_TAXONOMY((MERGE_AND_GROUP_SAMPLES.out.csv_sample.mix(MERGE_AND_GROUP_SAMPLES.out.csv_group)).flatten()) //csv_group
+    
+    ch_groups = ch_samplesheet.map{meta,path-> "${meta.id}:${meta.group}"}.collect()
+
+
+    PLOT_CORE(MERGE_AND_GROUP_SAMPLES.out.csv_species,SUMMARY_MMSEQS.out.taxlineage.collect(),ch_groups)
     // Diversity
     // Functional prediction
     // Write on db
@@ -97,7 +105,7 @@ workflow NANOTAX {
 
 
     // Collate and save software versions
-    //
+    
     softwareVersionsToYAML(ch_versions)
         .collectFile(
             storeDir: "${params.outdir}/pipeline_info",

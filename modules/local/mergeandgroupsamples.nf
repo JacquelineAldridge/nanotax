@@ -1,7 +1,6 @@
 
 process MERGE_AND_GROUP_SAMPLES {
     label 'process_single'
-    debug true
 
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
             'ghcr.io/dialvarezs/containers/polars:1.3.0' :
@@ -14,7 +13,7 @@ process MERGE_AND_GROUP_SAMPLES {
     output:
     path "group/", emit: csv_group,optional: true
     path "sample/", emit: csv_sample
-
+    path "sample/species.csv", emit: csv_species
     //path "versions.yml"           , emit: versions
 
     when:
