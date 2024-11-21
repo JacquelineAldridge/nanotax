@@ -70,7 +70,7 @@ def main(argv=None):
         print("silva")
         select_colums = ["query","genus","family","order","class","phylum"]
     if(args.db == 'genbank'):
-        print("genbank",args)
+        print("genbank")
         select_colums = ["query","taxname","genus","family","order","class","phylum"]
 
     
@@ -87,6 +87,8 @@ def main(argv=None):
               tcov = pl.col("tcov").round(3))
           .sort(["pident","tcov"], descending=True)
           )
+    df_taxonomy = df.select(['taxname', 'genus', 'family', 'order', 'class', 'phylum']).unique(keep="first")#.collect().write_csv(f"taxlineage/{args.sample}_taxlineage.csv")
+
     ## If a read have more than one aln with the same specie (genbank) or genus (silva), keep only the first aln 
     df = df.unique(subset=["query","taxname"], keep="first")
 
@@ -214,7 +216,14 @@ def main(argv=None):
         df_dif_genus_final = df_dif_genus_final.filter(pl.col("genus").str.count_matches("/").lt(2))
         df_dif_genus_final = df_dif_genus_final.select(["query","taxname","genus","family","order","class","phylum"])  
 
-        
+        #df_taxonomy.collect().write_csv(f"taxlineage/{args.sample}_taxlineage.csv")
+        df_taxonomy = df_taxonomy.filter(~pl.col("taxname").str.contains("mixed"))
+        df_taxonomy = (pl.concat([df_taxonomy,
+                                  df_dif_genus_final
+                                  .select(["taxname","genus","family","order","class","phylum"])])
+                       
+                       )
+    df_taxonomy.collect().write_csv(f"taxlineage/{args.sample}_taxlineage.csv")
 
     ## Case 4: Reads with secondary alns: Alns with same genus (always)
     id_same_genus = set(df_valid_sec_alns
