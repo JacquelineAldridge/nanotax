@@ -12,8 +12,8 @@ process MERGE_AND_GROUP_SAMPLES {
     path summary_by_sample
 
     output:
-    path "group/*.csv", emit: csv_group,optional: true
-    path "sample/*.csv", emit: csv_sample
+    path "group/", emit: csv_group,optional: true
+    path "sample/", emit: csv_sample
 
     //path "versions.yml"           , emit: versions
 
