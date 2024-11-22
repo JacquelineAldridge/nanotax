@@ -15,6 +15,7 @@ include { SUMMARY_MMSEQS         } from '../modules/local/summarymmseqs'
 include { MERGE_AND_GROUP_SAMPLES } from '../modules/local/mergeandgroupsamples'
 include { PLOT_CORE              } from '../modules/local/plotcore'
 include { PLOT_TAXONOMY          } from '../modules/local/plottaxonomy'
+include { DIVERSITY              } from '../modules/local/diversity'
 
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -58,7 +59,7 @@ workflow NANOTAX {
             ch_mix = NANOQ_FILTER.out.reads.map{it -> [it[0],[],it[1]]}
             FILTLONG(ch_mix)
             ch_input_tax = FILTLONG.out.reads
-            ch_versions.mix(FILTLONG.out.versions.first())
+            ch_versions = ch_versions.mix(FILTLONG.out.versions.first())
         }else{
             ch_input_tax = NANOQ_FILTER.out.reads
 
@@ -92,13 +93,15 @@ workflow NANOTAX {
     MERGE_AND_GROUP_SAMPLES(SUMMARY_MMSEQS.out.summary_csv.collect())
 
     // Plots for Taxonomic assignment
-    PLOT_TAXONOMY((MERGE_AND_GROUP_SAMPLES.out.csv_sample.mix(MERGE_AND_GROUP_SAMPLES.out.csv_group)).flatten()) //csv_group
-    
     ch_groups = ch_samplesheet.map{meta,path-> "${meta.id}:${meta.group}"}.collect()
-
-
+    PLOT_TAXONOMY((MERGE_AND_GROUP_SAMPLES.out.csv_sample.mix(MERGE_AND_GROUP_SAMPLES.out.csv_group)).flatten()) //csv_group
     PLOT_CORE(MERGE_AND_GROUP_SAMPLES.out.csv_species,SUMMARY_MMSEQS.out.taxlineage.collect(),ch_groups)
+    
     // Diversity
+    if(params.diversity.run){
+        DIVERSITY(MERGE_AND_GROUP_SAMPLES.out.csv_species_nreads,ch_groups)
+        ch_versions = ch_versions.mix(DIVERSITY.out.versions.first())
+    }
     // Functional prediction
     // Write on db
     

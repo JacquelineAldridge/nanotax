@@ -14,6 +14,8 @@ process MERGE_AND_GROUP_SAMPLES {
     path "group/", emit: csv_group,optional: true
     path "sample/", emit: csv_sample
     path "sample/species.csv", emit: csv_species
+    path "species_nreads.csv", emit: csv_species_nreads
+
     //path "versions.yml"           , emit: versions
 
     when:
