@@ -21,7 +21,7 @@ process PICRUST2 {
     name = abundances_tsv.simpleName - ~/reads_/
     """
     picrust2_pipeline.py -s ${fasta} -i ${abundances_tsv} -o ${name} --stratified -p ${task.cpus}
-    rm -r intermediate/
+    rm -r ${name}/intermediate/
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
         picrust2: \$(picrust2_pipeline.py --version | sed 's/picrust2_pipeline.py //g')
