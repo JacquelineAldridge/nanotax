@@ -7,11 +7,14 @@ process SUMMARY_MMSEQS {
 
     input:
     tuple val(meta), path(mmseqs_tsv)
+    val(samples)
     //val(meta_groups)
 
     output:
     path("*.csv"), emit: summary_csv
     path("taxlineage/${meta.id}_taxlineage.csv"), emit: taxlineage
+    tuple val(meta), path("reads_*.tsv"), emit: abundance_picrust
+
     //ToDo: polars version
     //path "versions.yml"           , emit: versions
 
@@ -22,7 +25,7 @@ process SUMMARY_MMSEQS {
 
     """
     mkdir taxlineage
-    summary_mmseqs.py --db ${params.taxonomic_assignament.db_name} --mmseqs_tsv ${mmseqs_tsv} --min_aln ${params.taxonomic_assignament.min_aln} --min_identity ${params.taxonomic_assignament.min_identity} --group ${meta.group} --sample ${meta.id}
+    summary_mmseqs.py --db ${params.taxonomic_assignament.db_name} --mmseqs_tsv ${mmseqs_tsv} --min_aln ${params.taxonomic_assignament.min_aln} --min_identity ${params.taxonomic_assignament.min_identity} --group ${meta.group} --sample ${meta.id} 
 
     """
 /*

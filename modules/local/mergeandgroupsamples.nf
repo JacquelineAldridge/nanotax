@@ -1,7 +1,6 @@
 
 process MERGE_AND_GROUP_SAMPLES {
     label 'process_single'
-
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
             'ghcr.io/dialvarezs/containers/polars:1.3.0' :
             'ghcr.io/dialvarezs/containers/polars:1.3.0' }"

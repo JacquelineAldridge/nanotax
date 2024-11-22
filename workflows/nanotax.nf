@@ -16,6 +16,8 @@ include { MERGE_AND_GROUP_SAMPLES } from '../modules/local/mergeandgroupsamples'
 include { PLOT_CORE              } from '../modules/local/plotcore'
 include { PLOT_TAXONOMY          } from '../modules/local/plottaxonomy'
 include { DIVERSITY              } from '../modules/local/diversity'
+include { SEQKIT                 } from '../modules/local/seqkit'
+include { PICRUST2               } from '../modules/local/picrust2'
 
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -89,8 +91,9 @@ workflow NANOTAX {
     ch_mmseqs_output = MMSEQS_EASYSEARCH.out.tsv//.map{meta,tsv -> tsv}.collect()
     //ch_first_group = MMSEQS_EASYSEARCH.out.tsv.map{meta,tsv -> meta}.first()
     ch_groups_info = MMSEQS_EASYSEARCH.out.tsv.map{meta,tsv -> "${meta.id}:${meta.group}"}.collect()
-    SUMMARY_MMSEQS(ch_mmseqs_output)
-    MERGE_AND_GROUP_SAMPLES(SUMMARY_MMSEQS.out.summary_csv.collect())
+    ch_samples = ch_samplesheet.map{meta,path-> "${meta.id}"}.collect()
+    SUMMARY_MMSEQS(ch_mmseqs_output,ch_samples)
+    MERGE_AND_GROUP_SAMPLES(SUMMARY_MMSEQS.out.summary_csv.collect())//, SUMMARY_MMSEQS.out.abundance_picrust.collect())
 
     // Plots for Taxonomic assignment
     ch_groups = ch_samplesheet.map{meta,path-> "${meta.id}:${meta.group}"}.collect()
@@ -103,6 +106,12 @@ workflow NANOTAX {
         ch_versions = ch_versions.mix(DIVERSITY.out.versions.first())
     }
     // Functional prediction
+    if(params.functional_pred.run){
+        ch_input_picrust = (SUMMARY_MMSEQS.out.abundance_picrust.join(ch_input_tax)).map{meta,tsv,fastq -> [tsv,fastq]}
+        SEQKIT(ch_input_picrust) //ch_input_tax.map{meta, path -> path}.collect(),SUMMARY_MMSEQS.out.abundance_picrust.collect())
+        PICRUST2(SEQKIT.out.abundance, SEQKIT.out.fasta)
+        //ch_versions = ch_versions.mix(PICRUST2.out.versions.first())
+    }
     // Write on db
     
 

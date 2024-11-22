@@ -241,6 +241,13 @@ def main(argv=None):
 
     df_final = pl.concat([df_uniq,df_non_valid_sec_alns,df_dif_genus_final,df_same_genus])
     df_final = df_final.rename(mapping = {"taxname":"species"})
+
+    ## Picrust input
+    df_picrust = df_final.select(["query"]).with_columns(pl.lit(1).alias(args.sample))
+
+    df_picrust.collect().write_csv(f"reads_{args.sample}.tsv",separator = "\t",include_header= True)
+    ## end picrust inputs
+
     for category in ["species","genus","family","order","class","phylum"]:
         df_tax = (df_final
                     .group_by([category])
