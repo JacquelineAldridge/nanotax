@@ -10,49 +10,55 @@
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
 [![run with singularity](https://img.shields.io/badge/run%20with-singularity-1d355c.svg?labelColor=000000)](https://sylabs.io/docs/)
-[![Launch on Seqera Platform](https://img.shields.io/badge/Launch%20%F0%9F%9A%80-Seqera%20Platform-%234256e7)](https://cloud.seqera.io/launch?pipeline=https://github.com/catg/nanotax)
 
 ## Introduction
 
-**catg/nanotax** is a bioinformatics pipeline that ...
+**catg/nanotax** is a bioinformatics pipeline for the analysis of 16S rRNA gene sequencing data obtained by Nanopore sequencing. It takes a samplesheet with POD5 or FastQ files and barcodes (optional) and groups (optional) as input and performs basecalling and demultiplexing, quality control (QC), taxonomic assignment with databases, functional prediction and alpha diversity metrics and produces tables and plots with all the results. All the process are optional except taxonomic assignment.
 
-<!-- TODO nf-core:
-   Complete this sentence with a 2-3 sentence summary of what types of data the pipeline ingests, a brief overview of the
-   major pipeline sections and the types of output it produces. You're giving an overview to someone new
-   to nf-core here, in 15-20 seconds. For an example, see https://github.com/nf-core/rnaseq/blob/master/README.md#introduction
--->
+The pipeline then:
+1. Basecalling and demultiplexing with ([`Dorado`](https://github.com/nanoporetech/dorado)).
+2. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)) and ([`NanoQ`](https://github.com/esteinig/nanoq)).
+3. Quality and length filter with ([`NanoQ`](https://github.com/esteinig/nanoq)).
+4. Sampling by quality with ([`Filtlong`](https://github.com/rrwick/Filtlong))
+5. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+6. Assigns taxonomy to reads using ([`MMSeqs2`](https://github.com/soedinglab/MMseqs2)) with ([`Genbank`](https://www.ncbi.nlm.nih.gov/refseq/targetedloci/16S_process/)) or ([`SILVA`](https://www.arb-silva.de/)) database.
+7. (optionally) alpha diversity metrics with ([`Vegan`](https://cran.r-project.org/web/packages/vegan/vegan.pdf)) (R).
+8. (optionally) functional prediction with ([`PICRUSt2`](https://github.com/picrust/picrust2)) .
+9. (optionally) differential expression for functional prediction with([`LEfSe`](https://huttenhower.sph.harvard.edu/lefse/)). 
 
-<!-- TODO nf-core: Include a figure that guides the user through the major workflow steps. Many nf-core
-     workflows use the "tube map" design for that. See https://nf-co.re/docs/contributing/design_guidelines#examples for examples.   -->
-<!-- TODO nf-core: Fill in short bullet-pointed list of the default steps in the pipeline -->
-
-1. Read QC ([`FastQC`](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/))
-2. Present QC for raw reads ([`MultiQC`](http://multiqc.info/))
+All plots and tables are generated using Python, through either ([`pandas`](https://github.com/pandas-dev/pandas)) or ([`polars`](https://github.com/pola-rs/polars)). 
 
 ## Usage
 
 > [!NOTE]
 > If you are new to Nextflow and nf-core, please refer to [this page](https://nf-co.re/docs/usage/installation) on how to set-up Nextflow. Make sure to [test your setup](https://nf-co.re/docs/usage/introduction#how-to-run-a-pipeline) with `-profile test` before running the workflow on actual data.
 
-<!-- TODO nf-core: Describe the minimum required steps to execute the pipeline, e.g. how to prepare samplesheets.
-     Explain what rows and columns represent. For instance (please edit as appropriate):
+The columns in the sample file will vary depending on the analyses to be performed. Each row represents a sample, specifying either its associated `FASTQ` file or the `barcode` used during sequencing.
 
-First, prepare a samplesheet with your input data that looks as follows:
-
-`samplesheet.csv`:
+By default, the pipeline performs quality control and taxonomic assignment. For these tasks, the sample file must include the columns "samples" and "fastq".
 
 ```csv
-sample,fastq_1,fastq_2
-CONTROL_REP1,AEG588A1_S1_L002_R1_001.fastq.gz,AEG588A1_S1_L002_R2_001.fastq.gz
+sample,fastq
+sample_1,sample_1.fastq.gz
+sample_2,sample_2.fastq.gz
 ```
 
-Each row represents a fastq file (single-end) or a pair of fastq files (paired end).
+If you wish to start from the basecalling step, the `fastq` column should be replaced with `barcode` , and the directory containing the POD5 files must be specified using the `--basecalling.pod5_dir`  parameter.
+```csv
+sample,barcode
+sample_1,barcode01
+sample_2,barcode02
+```
 
--->
+To perform diversity analyses or differential expression of metabolic pathways, the sample file must include a groups column.
+```csv
+sample,fastq,group
+sample_1,sample_1.fastq.gz,G1
+sample_2,sample_2.fastq.gz,G2
+```
+
 
 Now, you can run the pipeline using:
-
-<!-- TODO nf-core: update the following command to include all required parameters for a minimal example -->
 
 ```bash
 nextflow run catg/nanotax \
@@ -66,9 +72,9 @@ nextflow run catg/nanotax \
 
 ## Credits
 
-catg/nanotax was originally written by JacquelineAld.
+catg/nanotax was originally written by JacquelineAldridge.
 
-We thank the following people for their extensive assistance in the development of this pipeline:
+<!-- We thank the following people for their extensive assistance in the development of this pipeline: -->
 
 <!-- TODO nf-core: If applicable, make list of people who have also contributed -->
 
