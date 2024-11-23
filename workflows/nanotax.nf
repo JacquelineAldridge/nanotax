@@ -18,6 +18,9 @@ include { PLOT_TAXONOMY          } from '../modules/local/plottaxonomy'
 include { DIVERSITY              } from '../modules/local/diversity'
 include { SEQKIT                 } from '../modules/local/seqkit'
 include { PICRUST2               } from '../modules/local/picrust2'
+include { MERGE_PICRUST_OUT      } from '../modules/local/mergepicrustout'
+include { LEFSE                  } from '../modules/local/lefse'
+include { PLOT_LEFSE             } from '../modules/local/plotlefse'
 
 include { paramsSummaryMap       } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc   } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -101,6 +104,7 @@ workflow NANOTAX {
     PLOT_CORE(MERGE_AND_GROUP_SAMPLES.out.csv_species,SUMMARY_MMSEQS.out.taxlineage.collect(),ch_groups)
     
     // Diversity
+    // ToDo: Solo si hay grupos
     if(params.diversity.run){
         DIVERSITY(MERGE_AND_GROUP_SAMPLES.out.csv_species_nreads,ch_groups)
         ch_versions = ch_versions.mix(DIVERSITY.out.versions.first())
@@ -110,7 +114,12 @@ workflow NANOTAX {
         ch_input_picrust = (SUMMARY_MMSEQS.out.abundance_picrust.join(ch_input_tax)).map{meta,tsv,fastq -> [tsv,fastq]}
         SEQKIT(ch_input_picrust) //ch_input_tax.map{meta, path -> path}.collect(),SUMMARY_MMSEQS.out.abundance_picrust.collect())
         PICRUST2(SEQKIT.out.abundance, SEQKIT.out.fasta)
-        //ch_versions = ch_versions.mix(PICRUST2.out.versions.first())
+        ch_versions = ch_versions.mix(PICRUST2.out.versions.first())
+
+        MERGE_PICRUST_OUT(PICRUST2.out.dir.collect(), ch_groups)
+        LEFSE(MERGE_PICRUST_OUT.out.lefse_input.flatten())
+        PLOT_LEFSE(LEFSE.out.lefse_output.flatten())
+        // ToDo:LEFSE SOLO SI HAY GRUPOS
     }
     // Write on db
     
