@@ -41,8 +41,6 @@ df_index <- (data.frame(colnames(df), groups, shannon_diversity,simpson_diversit
     sample = colnames.df.
     )
 
-print(df_index)
-
 counts <- table(df_index$group)
 
 valid_groups <- names(counts[counts >= 3])

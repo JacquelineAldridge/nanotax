@@ -1,7 +1,6 @@
 
 process PLOT_CORE {
     label 'process_single'
-    debug true
     conda "conda-forge::python-kaleido=0.2.1 conda-forge::plotly=5.17.0 conda-forge::pandas=2.1.1"
 
     //conda "conda-forge::pandas=2.1.1 conda-forge::plotly=5.17.0 conda-forge::python-kaleido=0.2.1"
