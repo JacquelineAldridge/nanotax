@@ -1,7 +1,7 @@
 
 process LEFSE {
     label 'process_single'
-    conda "${moduleDir}/environment.yml"
+    conda "bioconda::lefse=1.1.2"
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
         'https://depot.galaxyproject.org/singularity/lefse:1.1.2--pyhdfd78af_0':
         'biocontainers/lefse:1.1.2--pyhdfd78af_0' }"
