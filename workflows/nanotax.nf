@@ -3,6 +3,10 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
+include { BASECALLING            } from '../modules/local/basecalling'
+include { BASECALLING_FILTERING  } from '../modules/local/basecallingfiltering'
+include { DEMULTIPLEXING         } from '../modules/local/demultiplexing'
+include { PIGZ                   } from '../modules/local/pigz' 
 include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { NANOQ as NANOQ_FILTER  } from '../modules/nf-core/nanoq/main'
@@ -43,9 +47,20 @@ workflow NANOTAX {
     ch_multiqc_files = Channel.empty()
     
     // BASECALLING AND DEMUX
-    if(params.qc.basecalling){
-        // ToDo: cambiar por basecalling
-        ch_input_qc = ch_samplesheet
+    if(params.basecalling.run){
+            ch_pod5_dir = Channel.fromPath(params.basecalling.pod5_dir)
+            BASECALLING(ch_pod5_dir)
+            BASECALLING_FILTERING(BASECALLING.out.reads)
+            DEMULTIPLEXING(BASECALLING_FILTERING.out.reads_pass)
+            ch_demux = DEMULTIPLEXING.out.classified
+                            .flatten()
+                              .map { path -> def barcode = (path =~ /_(barcode\d+)\.fastq/)[0][1]
+                              return [barcode, path]}
+
+            ch_input_qc = ch_samplesheet.map{meta, barcode -> [barcode[0], meta]}.join(ch_demux).map{barcode, meta, fastq -> [meta, fastq]}
+            PIGZ(ch_input_qc)
+            ch_input_qc = PIGZ.out.fastq_comp
+
     }else{
         ch_input_qc = ch_samplesheet
     }
@@ -69,7 +84,6 @@ workflow NANOTAX {
             ch_input_tax = NANOQ_FILTER.out.reads
 
         }
-
         ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]},NANOQ_QC_RAW.out.stats.collect{it[1]},NANOQ_FILTER.out.stats.collect{it[1]})
         ch_versions = ch_versions.mix(FASTQC.out.versions.first(),NANOQ_FILTER.out.versions.first())
     
@@ -120,10 +134,7 @@ workflow NANOTAX {
         LEFSE(MERGE_PICRUST_OUT.out.lefse_input.flatten())
         PLOT_LEFSE(LEFSE.out.lefse_output.flatten())
         // ToDo:LEFSE SOLO SI HAY GRUPOS
-    }
-    // Write on db
-    
-
+    }  
 
     // Collate and save software versions
     
