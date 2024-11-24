@@ -9,11 +9,27 @@
 > Di Tommaso P, Chatzou M, Floden EW, Barja PP, Palumbo E, Notredame C. Nextflow enables reproducible computational workflows. Nat Biotechnol. 2017 Apr 11;35(4):316-319. doi: 10.1038/nbt.3820. PubMed PMID: 28398311.
 
 ## Pipeline tools
+- [`NanoQ`](https://github.com/esteinig/nanoq)
+> Nanoq: ultra-fast quality control for nanopore reads
+
+<!-- - [`Filtlong`](https://github.com/rrwick/Filtlong)
+> -->
+
+- [`MMSeqs2`](https://github.com/soedinglab/MMseqs2)
+> MMseqs2 enables sensitive protein sequence searching for the analysis of massive data sets
+
+- [`Vegan`](https://cran.r-project.org/web/packages/vegan/vegan.pdf)
+> VEGAN, a package of R functions for community ecology
+
+- [`PICRUSt2`](https://github.com/picrust/picrust2)
+> PICRUSt2 for prediction of metagenome functions
+
+<!-- -[`LEfSe`](https://huttenhower.sph.harvard.edu/lefse/)
+> -->
 
 - [FastQC](https://www.bioinformatics.babraham.ac.uk/projects/fastqc/)
 
 > Andrews, S. (2010). FastQC: A Quality Control Tool for High Throughput Sequence Data [Online].
-
 - [MultiQC](https://pubmed.ncbi.nlm.nih.gov/27312411/)
 
 > Ewels P, Magnusson M, Lundin S, Käller M. MultiQC: summarize analysis results for multiple tools and samples in a single report. Bioinformatics. 2016 Oct 1;32(19):3047-8. doi: 10.1093/bioinformatics/btw354. Epub 2016 Jun 16. PubMed PMID: 27312411; PubMed Central PMCID: PMC5039924.
