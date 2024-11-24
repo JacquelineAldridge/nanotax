@@ -70,39 +70,39 @@ nextflow run catg/nanotax \
 The following parameters can be modified to enable or disable specific modules:
 | Parameter            | Type    | Description | Default |
 |----------------------|---------|-------------|---------|
-| basecalling.run      | boolean | Enable run basecalling and demultiplexing | false
-| qc.run               | boolean | Enable run quality check | true
-| diversity.run        | boolean | Enable run diversity analysis module | true if samplesheet has groups
-| functional_pred.run  | boolean | Enable run functional prediction | true if samplesheet has groups
+| basecalling.run      | boolean | Enable run basecalling and demultiplexing | `false`
+| qc.run               | boolean | Enable run quality check | `true`
+| diversity.run        | boolean | Enable run diversity analysis module | `true` if samplesheet has groups
+| functional_pred.run  | boolean | Enable run functional prediction | `true` if samplesheet has groups
 
 Each module has specific parameters that can be configured when enabled.
 ### Basecalling module
 | Parameter            | Type    | Description | Default |
 |----------------------|---------|-------------|---------| 
 | basecalling.pod5_dir | string  | directory containing POD5 files | input/pod5
-| basecalling.gpus     | integer | Number of GPUs to use | 1
-| basecalling.dorado_basecalling_model | string | Basecalling model to use  (fast, hac, sup) | sup 
-| basecalling.qscore_filter | integer | Q-score threshold for passing and failing reads | 10
-| basecalling.barcoding_kit | string | Barcoding kit used for multiplexing | 'SQK-16S114-24'
-| basecalling.save_reads | boolean | Save reads after basecalling and demultiplexing in the results directory | false
+| basecalling.gpus     | integer | Number of GPUs to use | `1`
+| basecalling.dorado_basecalling_model | string | Basecalling model to use  (fast, hac, sup) | `sup `
+| basecalling.qscore_filter | integer | Q-score threshold for passing and failing reads | `10`
+| basecalling.barcoding_kit | string | Barcoding kit used for multiplexing | `SQK-16S114-24`
+| basecalling.save_reads | boolean | Save reads after basecalling and demultiplexing in the results directory | `false`
 
 ### QC module
 | Parameter            | Type    | Description | Default |
 |----------------------|---------|-------------|---------|
-| qc.subsampling | integer | Number of reads to sampling | 100000
-| qc.min_length  | integer | Minimum required length for a read |1000
-| qc.max_length  | integer | Maximum allowed length for a read | 2000
-| qc.min_qscore  | integer | Minimum q-score | 15
-| qc.save_reads  | boolean | Save reads after  quality control in the results directory | false
+| qc.subsampling | integer | Number of reads to sampling | `100000`
+| qc.min_length  | integer | Minimum required length for a read |`1000`
+| qc.max_length  | integer | Maximum allowed length for a read | `2000`
+| qc.min_qscore  | integer | Minimum q-score | `15`
+| qc.save_reads  | boolean | Save reads after  quality control in the results directory | `false`
 
 ### Taxonomic assignment module
 | Parameter            | Type    | Description | Default |
 |----------------------|---------|-------------|---------|
-| taxonomic_assignament.min_aln       | integer | Minimum alignment length to retain an alignment | 1000
-| taxonomic_assignament.min_identity  | integer | Minimum sequence identity between the read and database hit (range: 0–1) | 0.95 
-| taxonomic_assignament.download_db   | boolean | Download the database from the internet | true 
-| taxonomic_assignament.db_name       | string  | Database name to use (genbank or silva) | genbank
-| taxonomic_assignament.db_dir        | string  | Directory containing the database (required if download_db is false) | "" (empty)
+| taxonomic_assignment.min_aln       | integer | Minimum alignment length to retain an alignment | `1000`
+| taxonomic_assignment.min_identity  | integer | Minimum sequence identity between the read and database hit (range: 0–1) | `0.95` 
+| taxonomic_assignment.download_db   | boolean | Download the database from the internet | `true` 
+| taxonomic_assignment.db_name       | string  | Database name to use (genbank or silva) | `genbank`
+| taxonomic_assignment.db_dir        | string  | Directory containing the database (required if download_db is false) | `` (empty)
 
 
 The diversity and functional prediction modules do not have specific parameters associated with them.
