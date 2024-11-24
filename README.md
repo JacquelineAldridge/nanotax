@@ -1,11 +1,6 @@
 
 
 # catg/nanotax
-
-[![GitHub Actions CI Status](https://github.com/catg/nanotax/actions/workflows/ci.yml/badge.svg)](https://github.com/catg/nanotax/actions/workflows/ci.yml)
-[![GitHub Actions Linting Status](https://github.com/catg/nanotax/actions/workflows/linting.yml/badge.svg)](https://github.com/catg/nanotax/actions/workflows/linting.yml)[![Cite with Zenodo](http://img.shields.io/badge/DOI-10.5281/zenodo.XXXXXXX-1073c8?labelColor=000000)](https://doi.org/10.5281/zenodo.XXXXXXX)
-[![nf-test](https://img.shields.io/badge/unit_tests-nf--test-337ab7.svg)](https://www.nf-test.com)
-
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
@@ -62,13 +57,55 @@ Now, you can run the pipeline using:
 
 ```bash
 nextflow run catg/nanotax \
-   -profile <docker/singularity/.../institute> \
+   -profile <docker/apptainer/.../institute> \
    --input samplesheet.csv \
    --outdir <OUTDIR>
 ```
 
 > [!WARNING]
 > Please provide pipeline parameters via the CLI or Nextflow `-params-file` option. Custom config files including those provided by the `-c` Nextflow option can be used to provide any configuration _**except for parameters**_; see [docs](https://nf-co.re/docs/usage/getting_started/configuration#custom-configuration-files).
+
+
+## Parameters
+The following parameters can be modified to enable or disable specific modules:
+| Parameter            | Type    | Description | Default |
+|----------------------|---------|-------------|---------|
+| basecalling.run      | boolean | Enable run basecalling and demultiplexing | false
+| qc.run               | boolean | Enable run quality check | true
+| diversity.run        | boolean | Enable run diversity analysis module | true if samplesheet has groups
+| functional_pred.run  | boolean | Enable run functional prediction | true if samplesheet has groups
+
+Each module has specific parameters that can be configured when enabled.
+### Basecalling module
+| Parameter            | Type    | Description | Default |
+|----------------------|---------|-------------|---------| 
+| basecalling.pod5_dir | string  | directory containing POD5 files | input/pod5
+| basecalling.gpus     | integer | Number of GPUs to use | 1
+| basecalling.dorado_basecalling_model | string | Basecalling model to use  (fast, hac, sup) | sup 
+| basecalling.qscore_filter | integer | Q-score threshold for passing and failing reads | 10
+| basecalling.barcoding_kit | string | Barcoding kit used for multiplexing | 'SQK-16S114-24'
+| basecalling.save_reads | boolean | Save reads after basecalling and demultiplexing in the results directory | false
+
+### QC module
+| Parameter            | Type    | Description | Default |
+|----------------------|---------|-------------|---------|
+| qc.subsampling | integer | Number of reads to sampling | 100000
+| qc.min_length  | integer | Minimum required length for a read |1000
+| qc.max_length  | integer | Maximum allowed length for a read | 2000
+| qc.min_qscore  | integer | Minimum q-score | 15
+| qc.save_reads  | boolean | Save reads after  quality control in the results directory | false
+
+### Taxonomic assignment module
+| Parameter            | Type    | Description | Default |
+|----------------------|---------|-------------|---------|
+| taxonomic_assignament.min_aln       | integer | Minimum alignment length to retain an alignment | 1000
+| taxonomic_assignament.min_identity  | integer | Minimum sequence identity between the read and database hit (range: 0–1) | 0.95 
+| taxonomic_assignament.download_db   | boolean | Download the database from the internet | true 
+| taxonomic_assignament.db_name       | string  | Database name to use (genbank or silva) | genbank
+| taxonomic_assignament.db_dir        | string  | Directory containing the database (required if download_db is false) | "" (empty)
+
+
+The diversity and functional prediction modules do not have specific parameters associated with them.
 
 ## Credits
 
