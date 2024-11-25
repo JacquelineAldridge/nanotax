@@ -83,11 +83,12 @@ def main(argv=None):
             pl.col("taxlineage").str.extract(r".*;o_([^;]*);._.*", 1).alias("order"),
             pl.col("taxlineage").str.extract(r".*;c_([^;]*);._.*", 1).alias("class"),
             pl.col("taxlineage").str.extract(r".*;p_([^;]*);._.*", 1).alias("phylum"),
+            pl.col("taxlineage").str.extract(r".*;s_([^;]*)(?:;.*)?", 1).alias("species"),
+
               pident = pl.col("pident").round(1),
               tcov = pl.col("tcov").round(3))
           .sort(["pident","tcov"], descending=True)
           )
-    df_taxonomy = df.select(['taxname', 'genus', 'family', 'order', 'class', 'phylum']).unique(keep="first")#.collect().write_csv(f"taxlineage/{args.sample}_taxlineage.csv")
 
     ## If a read have more than one aln with the same specie (genbank) or genus (silva), keep only the first aln 
     df = df.unique(subset=["query","taxname"], keep="first")
@@ -101,10 +102,12 @@ def main(argv=None):
             pl.col("taxlineage").str.extract(r".*;f_([^;]*);._.*", 1).alias("family"),
             pl.col("taxlineage").str.extract(r".*;o_([^;]*);._.*", 1).alias("order"),
             pl.col("taxlineage").str.extract(r".*;c_([^;]*);._.*", 1).alias("class"),
-            pl.col("taxlineage").str.extract(r".*;p_([^;]*);._.*", 1).alias("phylum")
+            pl.col("taxlineage").str.extract(r".*;p_([^;]*);._.*", 1).alias("phylum"),
          )
-       .select(["query","taxname","genus","family","order","class","phylum"])  
+       .select(["query","species","taxname","genus","family","order","class","phylum"])  
     )
+    df_taxonomy = df.select(['taxname',"species", 'genus', 'family', 'order', 'class', 'phylum']).unique(keep="first")
+
     uniq_ids = set(df_uniq.select(["query"]).collect().to_series())
     
     ## Reads with secondary alns
@@ -121,8 +124,8 @@ def main(argv=None):
     )
 
 
-    ## Caso 2: Secondary alns have a difference with fist aln higher than 0.6 so we select first aln
-    uniq_ids_after_cutoff = (df_merge .group_by(["query"])
+    ## Caso 2: Secondary alns have a difference with first aln higher than 0.6 so we select first aln
+    uniq_ids_after_cutoff = (df_merge.group_by(["query"])
                         .agg(pl.count()
                         .alias("count"))
                         .filter(pl.col("count") == 1)
@@ -179,9 +182,9 @@ def main(argv=None):
                     .list.join(" / ")         
                     .alias("genus")             
                     )
-            .with_columns((pl.lit("mixed: ") + pl.col("genus")).alias("genus"))
+            .with_columns(( pl.col("genus")+pl.lit("(mixed species) ")).alias("taxname"))
+            .with_columns(( pl.col("genus") + pl.lit("(mixed species) ")).alias("genus"))
 
-            .with_columns((pl.lit("mixed genus: ") + pl.col("genus")).alias("taxname"))
             ##
             .with_columns(pl.col("family").list.join(" ").alias("family") )
             .with_columns(pl.col("family").str.split(" ")  
@@ -218,28 +221,54 @@ def main(argv=None):
 
         #df_taxonomy.collect().write_csv(f"taxlineage/{args.sample}_taxlineage.csv")
         df_taxonomy = df_taxonomy.filter(~pl.col("taxname").str.contains("mixed"))
-        df_taxonomy = (pl.concat([df_taxonomy,
+        df_taxonomy = (pl.concat([df_taxonomy.select(['taxname', 'genus', 'family', 'order', 'class', 'phylum']),
                                   df_dif_genus_final
                                   .select(["taxname","genus","family","order","class","phylum"])])
                        
                        )
     df_taxonomy.collect().write_csv(f"taxlineage/{args.sample}_taxlineage.csv")
 
-    ## Case 4: Reads with secondary alns: Alns with same genus (always)
+    ## Case 4 and 5: Reads with secondary lans with same genus always
     id_same_genus = set(df_valid_sec_alns
                      .filter(~pl.col("query").is_in(ids_dif_genus))
                      .select(["query"])
                      .collect()
                      .to_series()
                      )
-    df_same_genus = (df_first
-                      .filter(pl.col("query").is_in(id_same_genus))
-                      .rename(mapping={"target_first":"target","pident_first":"pident","taxname_first":"taxname","genus_first":"genus","family_first":"family","order_first":"order","class_first":"class","phylum_first":"phylum"})
-                      .select(["query","taxname","genus","family","order","class","phylum"])
-                    )
-    ## Concat everything
+    
+    # df_same_genus = (df_merge
+    #                   .filter(pl.col("query").is_in(id_same_genus))
+    #                   .rename(mapping={"target_first":"target","pident_first":"pident","taxname_first":"taxname","genus_first":"genus","family_first":"family","order_first":"order","class_first":"class","phylum_first":"phylum"})
+    #                   .select(["query","taxname","genus","family","order","class","phylum"])
+    #                 )
+    
+    ## Case 4: Reads with secondary alns with the same identity
+    df_same_genus_zero =  (df_merge
+                           .filter(pl.col("query").is_in(id_same_genus) &  (pl.col("species")!= pl.col("species_right")))
+                           .filter(pl.col("pident_diff") == 0)
+                           .unique(subset = "query", keep="first")
 
-    df_final = pl.concat([df_uniq,df_non_valid_sec_alns,df_dif_genus_final,df_same_genus])
+    )
+    df_same_genus_zero = (df_same_genus_zero.select(["query","genus","family","order","class","phylum"])
+                           .with_columns((pl.col("genus") +pl.lit(" (mixed species)")).alias("taxname")))
+    ## Case 5: Reads with secondary alns: Alns with same genus (always)    
+    
+    df_final = pl.concat([df_uniq,df_non_valid_sec_alns,df_dif_genus_final,df_same_genus_zero])
+    ids = set(df_final.select(["query"]).collect().to_series())
+
+    df_same_genus_not_zero = (df_first
+                       .filter(~pl.col("query").is_in(ids))
+                       .rename(mapping={"target_first":"target","pident_first":"pident","taxname_first":"taxname","genus_first":"genus","family_first":"family","order_first":"order","class_first":"class","phylum_first":"phylum"})
+                       .select(["query","taxname","genus","family","order","class","phylum"])
+                     )
+    ids = set(df_same_genus_not_zero
+                     .select(["query"])
+                     .collect()
+                     .to_series()
+                     )
+    
+    ## Concat everything
+    df_final = pl.concat([df_uniq,df_non_valid_sec_alns,df_dif_genus_final,df_same_genus_zero,df_same_genus_not_zero]) #,df_same_genus_not_zero
     df_final = df_final.rename(mapping = {"taxname":"species"})
 
     ## Picrust input
