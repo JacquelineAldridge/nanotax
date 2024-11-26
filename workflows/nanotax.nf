@@ -92,15 +92,15 @@ workflow NANOTAX {
     }
 
     // Taxonomic assignment
-    if(params.taxonomic_assignament.download_db && params.taxonomic_assignament.db_name == 'genbank'){
+    if(params.taxonomic_assignment.download_db && params.taxonomic_assignment.db_name == 'genbank'){
         BLASTCMD()
-        MMSEQS_CREATE16SDB(BLASTCMD.out.db_files,params.taxonomic_assignament.db_name)
+        MMSEQS_CREATE16SDB(BLASTCMD.out.db_files,params.taxonomic_assignment.db_name)
 
-    }else if(params.taxonomic_assignament.download_db && params.taxonomic_assignament.db_name == 'silva'){
-        MMSEQS_CREATE16SDB([],params.taxonomic_assignament.db_name)
-    }else if(!params.taxonomic_assignament.download_db){
+    }else if(params.taxonomic_assignment.download_db && params.taxonomic_assignment.db_name == 'silva'){
+        MMSEQS_CREATE16SDB([],params.taxonomic_assignment.db_name)
+    }else if(!params.taxonomic_assignment.download_db){
         print("ToDo: completar")
-        ch_db_dir = Channel.fromPath(params.taxonomic_assignament.db_dir)
+        ch_db_dir = Channel.fromPath(params.taxonomic_assignment.db_dir)
     }
     MMSEQS_EASYSEARCH(ch_input_tax,MMSEQS_CREATE16SDB.out.path_db)
     ch_versions = ch_versions.mix(MMSEQS_EASYSEARCH.out.versions.first())

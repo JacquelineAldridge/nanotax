@@ -27,7 +27,7 @@ process MERGE_AND_GROUP_SAMPLES {
     """
     mkdir group
     mkdir sample
-    merge_taxonomies.py --csv "${summary_by_sample}" --db ${params.taxonomic_assignament.db_name}
+    merge_taxonomies.py --csv "${summary_by_sample}" --db ${params.taxonomic_assignment.db_name}
 
     """
 
