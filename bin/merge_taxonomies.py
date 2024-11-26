@@ -40,8 +40,12 @@ def main(argv=None):
                         )
                         for f in glob.glob(f"*{category}.csv")])
         df.collect().pivot("sample", index=category, values="perc").fill_null(0).write_csv(f"sample/{category}.csv")
-        if(category == 'species'):
-            df.collect().pivot("sample", index=category, values="count").fill_null(0).write_csv(f"{category}_nreads.csv")
+        if(category == 'species' and args.db=='genbank'):
+            df.collect().pivot("sample", index=category, values="count").fill_null(0).write_csv(f"diversity_nreads.csv")
+            df.collect().pivot("sample", index=category, values="perc").fill_null(0).write_csv(f"core/last_assignment.csv")
+        if(category == 'genus' and args.db=='silva'):
+            df.collect().pivot("sample", index=category, values="count").fill_null(0).write_csv(f"diversity_nreads.csv")
+            df.collect().pivot("sample", index=category, values="perc").fill_null(0).write_csv(f"core/last_assignment.csv")
 
         if("group" in df.collect().columns):
             df_gby = (df

@@ -92,15 +92,16 @@ workflow NANOTAX {
     }
 
     // Taxonomic assignment
-    if(params.taxonomic_assignament.download_db && params.taxonomic_assignament.db_name == 'genbank'){
+    if(params.taxonomic_assignment.download_db && params.taxonomic_assignment.db_name == 'genbank'){
         BLASTCMD()
-        MMSEQS_CREATE16SDB(BLASTCMD.out.db_files,params.taxonomic_assignament.db_name)
+        MMSEQS_CREATE16SDB(BLASTCMD.out.db_files,params.taxonomic_assignment.db_name)
 
-    }else if(params.taxonomic_assignament.download_db && params.taxonomic_assignament.db_name == 'silva'){
-        MMSEQS_CREATE16SDB([],params.taxonomic_assignament.db_name)
-    }else if(!params.taxonomic_assignament.download_db){
+    }else if(params.taxonomic_assignment.download_db && params.taxonomic_assignment.db_name == 'silva'){
+        MMSEQS_CREATE16SDB([],params.taxonomic_assignment.db_name)
+
+    }else if(!params.taxonomic_assignment.download_db){
         print("ToDo: completar")
-        ch_db_dir = Channel.fromPath(params.taxonomic_assignament.db_dir)
+        ch_db_dir = Channel.fromPath(params.taxonomic_assignment.db_dir)
     }
     MMSEQS_EASYSEARCH(ch_input_tax,MMSEQS_CREATE16SDB.out.path_db)
     ch_versions = ch_versions.mix(MMSEQS_EASYSEARCH.out.versions.first())
@@ -115,12 +116,12 @@ workflow NANOTAX {
     // Plots for Taxonomic assignment
     ch_groups = ch_samplesheet.map{meta,path-> "${meta.id}:${meta.group}"}.collect()
     PLOT_TAXONOMY((MERGE_AND_GROUP_SAMPLES.out.csv_sample.mix(MERGE_AND_GROUP_SAMPLES.out.csv_group)).flatten()) //csv_group
-    PLOT_CORE(MERGE_AND_GROUP_SAMPLES.out.csv_species,SUMMARY_MMSEQS.out.taxlineage.collect(),ch_groups)
+    PLOT_CORE(MERGE_AND_GROUP_SAMPLES.out.csv_core,SUMMARY_MMSEQS.out.taxlineage.collect(),ch_groups)
     
     // Diversity
     // ToDo: Solo si hay grupos
     if(params.diversity.run){
-        DIVERSITY(MERGE_AND_GROUP_SAMPLES.out.csv_species_nreads,ch_groups)
+        DIVERSITY(MERGE_AND_GROUP_SAMPLES.out.csv_div_nreads,ch_groups)
         ch_versions = ch_versions.mix(DIVERSITY.out.versions.first())
     }
     // Functional prediction

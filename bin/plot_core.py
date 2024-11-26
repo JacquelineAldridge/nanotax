@@ -40,13 +40,13 @@ def parse_args(argv=None):
     return parser.parse_args(argv)
 
 
-def generate_core_plot(df_input:str, columns_to_core:list=[] ,group:str = " " ,colors:list = ["#FFFFFF","#88c3b5" ,"#7da0cf","#e4b7a8","#cfbfcb"]):
+def generate_core_plot(df_input:str,columns_to_core:list=[] ,group:str = " " ,colors:list = ["#FFFFFF","#88c3b5" ,"#7da0cf","#e4b7a8","#cfbfcb"],categories:list = ["phylum","class_","order","family","genus","species"]):
     df_data= pd.DataFrame(columns = ["taxonomie","parent","value"])
     sum_all = 0
     if(columns_to_core == "all"):
         columns_to_core = list(df_input["sample"].unique())
     df_input = df_input.rename(columns = {"class":"class_"})
-    for i,level in enumerate(["phylum","class_","order","family","genus","species"]):
+    for i,level in enumerate(categories):
         tax_up1 = list(set((df_input.filter(items=[level,"value","sample"]).query("sample in @columns_to_core").query("value >= 1"))[level]))
         df_subset = (df_input.query(f"{level} in @tax_up1")
                  .filter(items = [level, "sample","value"])
@@ -65,7 +65,8 @@ def generate_core_plot(df_input:str, columns_to_core:list=[] ,group:str = " " ,c
         df_subset= df_subset.groupby(level).sum().reset_index()
         df_subset["value"] = df_subset.set_index(level).mean(axis=1).reset_index()[0] 
         df_subset = df_subset.filter(items=[level,"value"])
-
+        if(level == "species"):
+            df_subset = df_subset.query("~species.str.contains('mixed')")
         if(level == "phylum"):
             df_subset = df_subset.rename(columns= {level:"taxonomie"})
             df_subset["parent"] = f"Core"
@@ -114,13 +115,21 @@ def generate_core_plot(df_input:str, columns_to_core:list=[] ,group:str = " " ,c
 def main(argv=None):
     args = parse_args(argv)
     df_lineage = pd.concat([pd.read_csv(file)
-                            for file in glob.glob("*taxlineage.csv")]).rename(columns={"taxname":"species"})
-    df_species = pd.read_csv("species.csv")
-    df_melt = pd.melt(df_species, id_vars=['species'],var_name='sample')
+                            for file in glob.glob("*taxlineage.csv")])
+    df_species = pd.read_csv("last_assignment.csv")
+    if("species" in df_species.columns):
+        df_melt = pd.melt(df_species, id_vars=['species'],var_name='sample')
+        df_lineage=df_lineage.rename(columns={"taxname":"species"})
+        cat = ["phylum","class_","order","family","genus","species"]
+    else:
+        df_melt = pd.melt(df_species, id_vars=['genus'],var_name='sample')
+        cat = ["phylum","class_","order","family","genus"]
+
+
     df_merge = pd.merge(df_melt,df_lineage,how="left").drop_duplicates(keep="first")
 
     ## Core all samples
-    generate_core_plot(df_merge,"all","all")
+    generate_core_plot(df_merge,"all","all",categories=cat)
 
     ## Core by groups
     groups = args.groups[1:len(args.groups)-1].split(", ")
@@ -130,7 +139,7 @@ def main(argv=None):
     for group in groups:
         samples_group = {key: value for key, value in groups_dict.items() if value == group}
         samples_group = samples_group.keys()
-        generate_core_plot(df_merge,list(samples_group),group)
+        generate_core_plot(df_merge,list(samples_group),group,categories=cat)
 
     
 

@@ -13,8 +13,8 @@ process MERGE_AND_GROUP_SAMPLES {
     output:
     path "group/", emit: csv_group,optional: true
     path "sample/", emit: csv_sample
-    path "sample/species.csv", emit: csv_species
-    path "species_nreads.csv", emit: csv_species_nreads
+    path "core/last_assignment.csv", emit: csv_core
+    path "diversity_nreads.csv", emit: csv_div_nreads
 
     //path "versions.yml"           , emit: versions
 
@@ -25,9 +25,8 @@ process MERGE_AND_GROUP_SAMPLES {
     def args = task.ext.args ?: ''
 
     """
-    mkdir group
-    mkdir sample
-    merge_taxonomies.py --csv "${summary_by_sample}" --db ${params.taxonomic_assignament.db_name}
+    mkdir group core sample
+    merge_taxonomies.py --csv "${summary_by_sample}" --db ${params.taxonomic_assignment.db_name}
 
     """
 

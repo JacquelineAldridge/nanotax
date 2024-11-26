@@ -20,6 +20,11 @@ process MMSEQS_CREATE16SDB {
     cd 16S_DB
     mmseqs databases SILVA db tmp 
     cd ..
+
+    cat <<-END_VERSIONS > versions.yml
+    "${task.process}":
+        mmseqs: \$(mmseqs | grep 'Version' | sed 's/MMseqs2 Version: //')
+    END_VERSIONS
     """
     else if(db_name == 'genbank') 
     """

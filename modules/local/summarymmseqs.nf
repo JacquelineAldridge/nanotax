@@ -26,7 +26,7 @@ process SUMMARY_MMSEQS {
 
     """
     mkdir taxlineage
-    summary_mmseqs.py --db ${params.taxonomic_assignament.db_name} --mmseqs_tsv ${mmseqs_tsv} --min_aln ${params.taxonomic_assignament.min_aln} --min_identity ${params.taxonomic_assignament.min_identity} --group ${meta.group} --sample ${meta.id} 
+    summary_mmseqs.py --db ${params.taxonomic_assignment.db_name} --mmseqs_tsv ${mmseqs_tsv} --min_aln ${params.taxonomic_assignment.min_aln} --min_identity ${params.taxonomic_assignment.min_identity} --group ${meta.group} --sample ${meta.id} 
 
     """
 /*
