@@ -69,24 +69,26 @@ def main(argv=None):
     if(args.db == 'silva'):
         print("silva")
         select_colums = ["query","genus","family","order","class","phylum"]
+        categories = ["genus","family","order","class","phylum"]
+        re_genus = r".*;g_([^;]*)(?:;.*)?"
     if(args.db == 'genbank'):
         print("genbank")
         select_colums = ["query","taxname","genus","family","order","class","phylum"]
-
+        categories = ["species","genus","family","order","class","phylum"]
+        re_genus = r".*;g_([^;]*);._.*"
     
     names = "query,target,pident,tcov,alnlen,taxname,taxlineage".split(",")
     df = (pl.scan_csv(args.mmseqs_tsv,separator="\t",has_header=False, new_columns=names)
           .filter((pl.col("pident")>=(args.min_identity)*100) & (pl.col("alnlen")>=args.min_aln))
           .with_columns(         
-            pl.col("taxlineage").str.extract(r".*;g_([^;]*);._.*", 1).alias("genus"),   
+            pl.col("taxlineage").str.extract(re_genus).alias("genus"),   
             pl.col("taxlineage").str.extract(r".*;f_([^;]*);._.*", 1).alias("family"),
             pl.col("taxlineage").str.extract(r".*;o_([^;]*);._.*", 1).alias("order"),
             pl.col("taxlineage").str.extract(r".*;c_([^;]*);._.*", 1).alias("class"),
             pl.col("taxlineage").str.extract(r".*;p_([^;]*);._.*", 1).alias("phylum"),
             pl.col("taxlineage").str.extract(r".*;s_([^;]*)(?:;.*)?", 1).alias("species"),
-
-              pident = pl.col("pident").round(1),
-              tcov = pl.col("tcov").round(3))
+            pident = pl.col("pident").round(1),
+            tcov = pl.col("tcov").round(3))
           .sort(["pident","tcov"], descending=True)
           )
 
@@ -98,7 +100,7 @@ def main(argv=None):
     df_uniq = (df
         .unique(subset="query", keep="none")
          .with_columns(
-            pl.col("taxlineage").str.extract(r".*;g_([^;]*);._.*", 1).alias("genus"),
+            pl.col("taxlineage").str.extract(re_genus, 1).alias("genus"),
             pl.col("taxlineage").str.extract(r".*;f_([^;]*);._.*", 1).alias("family"),
             pl.col("taxlineage").str.extract(r".*;o_([^;]*);._.*", 1).alias("order"),
             pl.col("taxlineage").str.extract(r".*;c_([^;]*);._.*", 1).alias("class"),
@@ -226,7 +228,7 @@ def main(argv=None):
                                   .select(["taxname","genus","family","order","class","phylum"])])
                        
                        )
-    df_taxonomy.collect().write_csv(f"taxlineage/{args.sample}_taxlineage.csv")
+    df_taxonomy.collect().unique(keep="first").write_csv(f"taxlineage/{args.sample}_taxlineage.csv")
 
     ## Case 4 and 5: Reads with secondary lans with same genus always
     id_same_genus = set(df_valid_sec_alns
@@ -235,12 +237,6 @@ def main(argv=None):
                      .collect()
                      .to_series()
                      )
-    
-    # df_same_genus = (df_merge
-    #                   .filter(pl.col("query").is_in(id_same_genus))
-    #                   .rename(mapping={"target_first":"target","pident_first":"pident","taxname_first":"taxname","genus_first":"genus","family_first":"family","order_first":"order","class_first":"class","phylum_first":"phylum"})
-    #                   .select(["query","taxname","genus","family","order","class","phylum"])
-    #                 )
     
     ## Case 4: Reads with secondary alns with the same identity
     df_same_genus_zero =  (df_merge
@@ -277,7 +273,7 @@ def main(argv=None):
     df_picrust.collect().write_csv(f"reads_{args.sample}.tsv",separator = "\t",include_header= True)
     ## end picrust inputs
 
-    for category in ["species","genus","family","order","class","phylum"]:
+    for category in categories:
         df_tax = (df_final
                     .group_by([category])
                     .agg(pl.count().alias("count"))
