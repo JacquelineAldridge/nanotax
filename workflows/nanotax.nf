@@ -11,6 +11,7 @@ include { FASTQC                 } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                } from '../modules/nf-core/multiqc/main'
 include { NANOQ as NANOQ_FILTER  } from '../modules/nf-core/nanoq/main'
 include { NANOQ as NANOQ_QC_RAW  } from '../modules/nf-core/nanoq/main'
+include { PLOT_QUALITY           } from '../modules/local/plotquality'
 include { FILTLONG               } from '../modules/nf-core/filtlong/main'
 include { BLAST as BLASTCMD      } from '../modules/local/blast'
 include { MMSEQS_CREATE16SDB     } from '../modules/local/mmseqs/create16sdb'
@@ -86,7 +87,8 @@ workflow NANOTAX {
         }
         ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]},NANOQ_QC_RAW.out.stats.collect{it[1]},NANOQ_FILTER.out.stats.collect{it[1]})
         ch_versions = ch_versions.mix(FASTQC.out.versions.first(),NANOQ_FILTER.out.versions.first())
-    
+        PLOT_QUALITY(NANOQ_FILTER.out.reads.map(it -> it[1]).collect())
+
     }else{
         ch_input_tax = ch_input_qc
     }

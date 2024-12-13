@@ -1,7 +1,9 @@
 process SUMMARY_MMSEQS {
+    memory { 6.GB * task.attempt }
     label 'process_single'
     conda "conda-forge::polars=1.14.0"
-
+    errorStrategy { task.exitStatus in 137..140 ? 'retry' : 'ignore' }
+    maxRetries 3
     container "${ workflow.containerEngine == 'singularity' && !task.ext.singularity_pull_docker_container ?
             'ghcr.io/dialvarezs/containers/polars:1.3.0' :
             'ghcr.io/dialvarezs/containers/polars:1.3.0' }"

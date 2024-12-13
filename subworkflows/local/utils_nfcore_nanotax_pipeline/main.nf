@@ -66,18 +66,30 @@ workflow PIPELINE_INITIALISATION {
     Channel
         .fromList(samplesheetToList(params.input, "${projectDir}/assets/schema_input.json"))
         .map {
-            meta, fastq,barcode,group ->
+            meta,fastq,barcode,group,subgroup,subsubgroup ->
                 if (!barcode && !group) {
                     return [ meta.id, meta + [ pod5:false, group: false ], [ fastq ] ]
                     
                 } else if (!barcode){
-                    return [ meta.id, meta + [ pod5:false, group: group ], [ fastq ] ]
+                    if(subgroup && subsubgroup){
+                    return [ meta.id, meta + [ pod5:false, group: group, subgroup: subgroup ], [ fastq ] ]
+                    } else if (subgroup){
+                    return [ meta.id, meta + [ pod5:false, group: group, subgroup: subgroup, subsubgroup: subsubgroup ], [ fastq ] ]
+                    }else{
+                    return [ meta.id, meta + [ pod5:false, group: group ], [ fastq ] ]}
+
                 }
                 else if (!group){
                     return [ meta.id, meta + [ pod5:true, group: false ], [ barcode ] ]
                 }
                 else {
+                    if(subgroup && subsubgroup){
+                    return [ meta.id, meta + [ pod5:true, group:group, subgroup: subgroup ], [ barcode ] ]
+                    } else if (subgroup){
+                    return [ meta.id, meta + [ pod5:true, group:group, subgroup: subgroup, subsubgroup: subsubgroup ], [ barcode ] ]
+                    } else{
                     return [ meta.id, meta + [ pod5:true, group:group ], [ barcode] ]
+                    }
                 }
         }
         .groupTuple()

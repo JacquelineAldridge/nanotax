@@ -89,24 +89,22 @@ def main(argv=None):
             pl.col("taxlineage").str.extract(r".*;s_([^;]*)(?:;.*)?", 1).alias("species"),
             pident = pl.col("pident").round(1),
             tcov = pl.col("tcov").round(3))
+            .with_columns(
+                pl.col("genus").fill_null(pl.lit("species:") + pl.col("species")).alias("genus"),
+                pl.col("family").fill_null(pl.lit("genus:") + pl.col("genus")).alias("family"),
+                pl.col("order").fill_null(pl.lit("family:") + pl.col("family")).alias("order"),
+                pl.col("class").fill_null(pl.lit("class:") + pl.col("family")).alias("class")
+            )
           .sort(["pident","tcov"], descending=True)
           )
 
     ## If a read have more than one aln with the same specie (genbank) or genus (silva), keep only the first aln 
     df = df.unique(subset=["query","taxname"], keep="first")
-
     
     ## Case 1: uniq assignment
     df_uniq = (df
         .unique(subset="query", keep="none")
-         .with_columns(
-            pl.col("taxlineage").str.extract(re_genus, 1).alias("genus"),
-            pl.col("taxlineage").str.extract(r".*;f_([^;]*);._.*", 1).alias("family"),
-            pl.col("taxlineage").str.extract(r".*;o_([^;]*);._.*", 1).alias("order"),
-            pl.col("taxlineage").str.extract(r".*;c_([^;]*);._.*", 1).alias("class"),
-            pl.col("taxlineage").str.extract(r".*;p_([^;]*);._.*", 1).alias("phylum"),
-         )
-       .select(["query","species","taxname","genus","family","order","class","phylum"])  
+        .select(["query","species","taxname","genus","family","order","class","phylum"])  
     )
     df_taxonomy = df.select(['taxname',"species", 'genus', 'family', 'order', 'class', 'phylum']).unique(keep="first")
 
@@ -124,7 +122,6 @@ def main(argv=None):
                  .with_columns(pident_diff = (pl.col("pident_first") - pl.col("pident")).round(1))
                  .filter(pl.col("pident_diff") < cutoff)
     )
-
 
     ## Caso 2: Secondary alns have a difference with first aln higher than 0.6 so we select first aln
     uniq_ids_after_cutoff = (df_merge.group_by(["query"])
