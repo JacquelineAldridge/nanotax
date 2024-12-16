@@ -72,23 +72,23 @@ workflow PIPELINE_INITIALISATION {
                     
                 } else if (!barcode){
                     if(subgroup && subsubgroup){
-                    return [ meta.id, meta + [ pod5:false, group: group, subgroup: subgroup ], [ fastq ] ]
+                    return [ meta.id, meta + [ pod5:false, group: group, subgroup: subgroup, subsubgroup:subsubgroup ], [ fastq ] ]
                     } else if (subgroup){
-                    return [ meta.id, meta + [ pod5:false, group: group, subgroup: subgroup, subsubgroup: subsubgroup ], [ fastq ] ]
+                    return [ meta.id, meta + [ pod5:false, group: group, subgroup: subgroup, subsubgroup:false ], [ fastq ] ]
                     }else{
-                    return [ meta.id, meta + [ pod5:false, group: group ], [ fastq ] ]}
+                    return [ meta.id, meta + [ pod5:false, group: group,subgroup: false, subsubgroup: false ], [ fastq ] ]}
 
                 }
                 else if (!group){
-                    return [ meta.id, meta + [ pod5:true, group: false ], [ barcode ] ]
+                    return [ meta.id, meta + [ pod5:true, group: false,subgroup: false, subsubgroup: false ], [ barcode ] ]
                 }
                 else {
                     if(subgroup && subsubgroup){
-                    return [ meta.id, meta + [ pod5:true, group:group, subgroup: subgroup ], [ barcode ] ]
+                    return [ meta.id, meta + [ pod5:true, group:group, subgroup: subgroup,subsubgroup: subsubgroup ], [ barcode ] ]
                     } else if (subgroup){
-                    return [ meta.id, meta + [ pod5:true, group:group, subgroup: subgroup, subsubgroup: subsubgroup ], [ barcode ] ]
+                    return [ meta.id, meta + [ pod5:true, group:group, subgroup: subgroup, subsubgroup: false ], [ barcode ] ]
                     } else{
-                    return [ meta.id, meta + [ pod5:true, group:group ], [ barcode] ]
+                    return [ meta.id, meta + [ pod5:true, group:group,subgroup: false, subsubgroup: false  ], [ barcode] ]
                     }
                 }
         }

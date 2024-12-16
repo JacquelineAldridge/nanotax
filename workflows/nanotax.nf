@@ -88,9 +88,11 @@ workflow NANOTAX {
         ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]},NANOQ_QC_RAW.out.stats.collect{it[1]},NANOQ_FILTER.out.stats.collect{it[1]})
         ch_versions = ch_versions.mix(FASTQC.out.versions.first(),NANOQ_FILTER.out.versions.first())
         PLOT_QUALITY(NANOQ_FILTER.out.reads.map(it -> it[1]).collect())
+        ch_input_tax = ch_input_tax.filter { meta, fastq -> !(params.exclude).contains(meta.id)}
 
     }else{
         ch_input_tax = ch_input_qc
+        ch_input_tax = ch_input_tax.filter { meta, fastq -> !(params.exclude).contains(meta.id)}
     }
 
     // Taxonomic assignment
@@ -123,7 +125,8 @@ workflow NANOTAX {
     // Diversity
     // ToDo: Solo si hay grupos
     if(params.diversity.run){
-        DIVERSITY(MERGE_AND_GROUP_SAMPLES.out.csv_div_nreads,ch_groups)
+        ch_groups_info_all = MMSEQS_EASYSEARCH.out.tsv.map{meta,tsv -> "${meta.id}:${meta.group}:${meta.subgroup}:${meta.subsubgroup}"}.collect()
+        DIVERSITY(MERGE_AND_GROUP_SAMPLES.out.csv_div_nreads,ch_groups_info_all)//ch_groups)
         ch_versions = ch_versions.mix(DIVERSITY.out.versions.first())
     }
     // Functional prediction
