@@ -76,6 +76,7 @@ The following parameters can be modified to enable or disable specific modules:
 | diversity.run        | boolean | Enable run diversity analysis module | `true` if samplesheet has groups
 | functional_pred.run  | boolean | Enable run functional prediction | `true` if samplesheet has groups
 | exclude              | list    | samples that are not included in the analyses, but their quality and quantity of readings information will be reported | []
+
 Each module has specific parameters that can be configured when enabled.
 
 ### Basecalling module

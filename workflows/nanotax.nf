@@ -125,7 +125,8 @@ workflow NANOTAX {
     // Diversity
     // ToDo: Solo si hay grupos
     if(params.diversity.run){
-        DIVERSITY(MERGE_AND_GROUP_SAMPLES.out.csv_div_nreads,ch_groups)
+        ch_groups_info_all = MMSEQS_EASYSEARCH.out.tsv.map{meta,tsv -> "${meta.id}:${meta.group}:${meta.subgroup}:${meta.subsubgroup}"}.collect()
+        DIVERSITY(MERGE_AND_GROUP_SAMPLES.out.csv_div_nreads,ch_groups_info_all)//ch_groups)
         ch_versions = ch_versions.mix(DIVERSITY.out.versions.first())
     }
     // Functional prediction
