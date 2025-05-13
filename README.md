@@ -1,5 +1,3 @@
-
-
 # catg/nanotax
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
@@ -19,9 +17,9 @@ The pipeline then:
 6. Assigns taxonomy to reads using ([`MMSeqs2`](https://github.com/soedinglab/MMseqs2)) with ([`Genbank`](https://www.ncbi.nlm.nih.gov/refseq/targetedloci/16S_process/)) or ([`SILVA`](https://www.arb-silva.de/)) database.
 7. (optionally) alpha diversity metrics with ([`Vegan`](https://cran.r-project.org/web/packages/vegan/vegan.pdf)) (R).
 8. (optionally) functional prediction with ([`PICRUSt2`](https://github.com/picrust/picrust2)) .
-9. (optionally) differential expression for functional prediction with([`LEfSe`](https://huttenhower.sph.harvard.edu/lefse/)). 
+9. (optionally) differential expression for functional prediction with([`LEfSe`](https://huttenhower.sph.harvard.edu/lefse/)).
 
-All plots and tables are generated using Python, through either ([`pandas`](https://github.com/pandas-dev/pandas)) or ([`polars`](https://github.com/pola-rs/polars)). 
+All plots and tables are generated using Python, through either ([`pandas`](https://github.com/pandas-dev/pandas)) or ([`polars`](https://github.com/pola-rs/polars)).
 
 ## Usage
 
@@ -81,7 +79,7 @@ Each module has specific parameters that can be configured when enabled.
 
 ### Basecalling module
 | Parameter            | Type    | Description | Default |
-|----------------------|---------|-------------|---------| 
+|----------------------|---------|-------------|---------|
 | basecalling.pod5_dir | string  | directory containing POD5 files | input/pod5
 | basecalling.gpus     | integer | Number of GPUs to use | `1`
 | basecalling.dorado_basecalling_model | string | Basecalling model to use  (fast, hac, sup) | `sup `
@@ -102,8 +100,8 @@ Each module has specific parameters that can be configured when enabled.
 | Parameter            | Type    | Description | Default |
 |----------------------|---------|-------------|---------|
 | taxonomic_assignment.min_aln       | integer | Minimum alignment length to retain an alignment | `1000`
-| taxonomic_assignment.min_identity  | integer | Minimum sequence identity between the read and database hit (range: 0–1) | `0.95` 
-| taxonomic_assignment.download_db   | boolean | Download the database from the internet | `true` 
+| taxonomic_assignment.min_identity  | integer | Minimum sequence identity between the read and database hit (range: 0–1) | `0.95`
+| taxonomic_assignment.download_db   | boolean | Download the database from the internet | `true`
 | taxonomic_assignment.db_name       | string  | Database name to use (genbank or silva) | `genbank`
 | taxonomic_assignment.db_dir        | string  | Directory containing the database (required if download_db is false) | `` (empty)
 
