@@ -1,5 +1,5 @@
 name: Feature request
-description: Suggest an idea for the catg/nanotax pipeline
+description: Suggest an idea for the catg-umag/nanotax pipeline
 labels: enhancement
 body:
   - type: textarea

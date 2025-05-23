@@ -1,12 +1,12 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/catg/nanotax/main/assets/schema_input.json",
-    "title": "catg/nanotax pipeline - params.input schema",
+    "$id": "https://raw.githubusercontent.com/catg-umag/nanotax/main/assets/schema_input.json",
+    "title": "catg-umag/nanotax pipeline - params.input schema",
     "description": "Schema for the file provided with params.input",
     "type": "array",
     "items": {
         "type": "object",
-        "properties": { 
+        "properties": {
             "sample": {
                 "type": "string",
                 "pattern": "^\\S+$",

@@ -1,5 +1,5 @@
 //
-// Subworkflow with functionality specific to the catg/nanotax pipeline
+// Subworkflow with functionality specific to the catg-umag/nanotax pipeline
 //
 
 /*
@@ -69,7 +69,7 @@ workflow PIPELINE_INITIALISATION {
             meta,fastq,barcode,group,subgroup,subsubgroup ->
                 if (!barcode && !group) {
                     return [ meta.id, meta + [ pod5:false, group: false ], [ fastq ] ]
-                    
+
                 } else if (!barcode){
                     if(subgroup && subsubgroup){
                     return [ meta.id, meta + [ pod5:false, group: group, subgroup: subgroup, subsubgroup:subsubgroup ], [ fastq ] ]

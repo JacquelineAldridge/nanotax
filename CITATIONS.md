@@ -1,4 +1,4 @@
-# catg/nanotax: Citations
+# catg-umag/nanotax: Citations
 
 ## [nf-core](https://pubmed.ncbi.nlm.nih.gov/32055031/)
 
