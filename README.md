@@ -1,4 +1,4 @@
-# catg/nanotax
+# catg-umag/nanotax
 [![Nextflow](https://img.shields.io/badge/nextflow%20DSL2-%E2%89%A524.04.2-23aa62.svg)](https://www.nextflow.io/)
 [![run with conda](http://img.shields.io/badge/run%20with-conda-3EB049?labelColor=000000&logo=anaconda)](https://docs.conda.io/en/latest/)
 [![run with docker](https://img.shields.io/badge/run%20with-docker-0db7ed?labelColor=000000&logo=docker)](https://www.docker.com/)
@@ -6,7 +6,7 @@
 
 ## Introduction
 
-**catg/nanotax** is a bioinformatics pipeline for the analysis of 16S rRNA gene sequencing data obtained by Nanopore sequencing. It takes a samplesheet with POD5 or FastQ files and barcodes (optional) and groups (optional) as input and performs basecalling and demultiplexing, quality control (QC), taxonomic assignment with databases, functional prediction and alpha diversity metrics and produces tables and plots with all the results. All the process are optional except taxonomic assignment.
+**catg-umag/nanotax** is a bioinformatics pipeline for the analysis of 16S rRNA gene sequencing data obtained by Nanopore sequencing. It takes a samplesheet with POD5 or FastQ files and barcodes (optional) and groups (optional) as input and performs basecalling and demultiplexing, quality control (QC), taxonomic assignment with databases, functional prediction and alpha diversity metrics and produces tables and plots with all the results. All the process are optional except taxonomic assignment.
 
 The pipeline then:
 1. Basecalling and demultiplexing with ([`Dorado`](https://github.com/nanoporetech/dorado)).
@@ -54,7 +54,7 @@ sample_2,sample_2.fastq.gz,G2
 Now, you can run the pipeline using:
 
 ```bash
-nextflow run catg/nanotax \
+nextflow run catg-umag/nanotax \
    -profile <docker/apptainer/.../institute> \
    --input samplesheet.csv \
    --outdir <OUTDIR>
@@ -110,7 +110,7 @@ The diversity and functional prediction modules do not have specific parameters 
 
 ## Credits
 
-catg/nanotax was originally written by JacquelineAldridge.
+catg-umag/nanotax was originally written by JacquelineAldridge.
 
 <!-- We thank the following people for their extensive assistance in the development of this pipeline: -->
 
@@ -123,7 +123,7 @@ If you would like to contribute to this pipeline, please see the [contributing g
 ## Citations
 
 <!-- TODO nf-core: Add citation for pipeline after first release. Uncomment lines below and update Zenodo doi and badge at the top of this file. -->
-<!-- If you use catg/nanotax for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
+<!-- If you use catg-umag/nanotax for your analysis, please cite it using the following doi: [10.5281/zenodo.XXXXXX](https://doi.org/10.5281/zenodo.XXXXXX) -->
 
 <!-- TODO nf-core: Add bibliography of tools and data used in your pipeline -->
 

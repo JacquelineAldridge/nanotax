@@ -1,6 +1,6 @@
 {
-    "name": "catg/nanotax",
-    "homePage": "https://github.com/catg/nanotax",
+    "name": "catg-umag/nanotax",
+    "homePage": "https://github.com/catg-umag/nanotax",
     "repos": {
         "https://github.com/nf-core/modules.git": {
             "modules": {

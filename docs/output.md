@@ -1,4 +1,4 @@
-# catg/nanotax: Output
+# catg-umag/nanotax: Output
 
 ## Introduction
 

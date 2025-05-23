@@ -1,7 +1,7 @@
 {
     "$schema": "https://json-schema.org/draft/2020-12/schema",
-    "$id": "https://raw.githubusercontent.com/catg/nanotax/main/nextflow_schema.json",
-    "title": "catg/nanotax pipeline parameters",
+    "$id": "https://raw.githubusercontent.com/catg-umag/nanotax/main/nextflow_schema.json",
+    "title": "catg-umag/nanotax pipeline parameters",
     "description": "A pipeline for the characterization of microbial communities with Nanopore",
     "type": "object",
     "$defs": {
