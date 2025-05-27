@@ -48,8 +48,8 @@ workflow NANOTAX {
     ch_multiqc_files = Channel.empty()
     
     // BASECALLING AND DEMUX
-    if(params.basecalling.run){
-            ch_pod5_dir = Channel.fromPath(params.basecalling.pod5_dir)
+    if(!params.skip_basecalling){
+            ch_pod5_dir = Channel.fromPath(params.dorado_pod5_dir)
             BASECALLING(ch_pod5_dir)
             BASECALLING_FILTERING(BASECALLING.out.reads)
             DEMULTIPLEXING(BASECALLING_FILTERING.out.reads_pass)
@@ -68,7 +68,7 @@ workflow NANOTAX {
     
 
     // QC
-    if(params.qc.run){
+    if(!params.skip_qc){
         FASTQC (
             ch_input_qc
         )
@@ -76,7 +76,7 @@ workflow NANOTAX {
         NANOQ_FILTER(ch_input_qc,'fastq.gz')
         NANOQ_QC_RAW(ch_input_qc,'fastq.gz')
 
-        if(params.qc.subsampling>0){
+        if(params.filtlong_sampling>0){
             ch_mix = NANOQ_FILTER.out.reads.map{it -> [it[0],[],it[1]]}
             FILTLONG(ch_mix)
             ch_input_tax = FILTLONG.out.reads
@@ -96,16 +96,16 @@ workflow NANOTAX {
     }
 
     // Taxonomic assignment
-    if(params.taxonomic_assignment.download_db && params.taxonomic_assignment.db_name == 'genbank'){
+    if(params.mmseqs2_download_db && params.mmseqs2_db_name == 'genbank'){
         BLASTCMD()
-        MMSEQS_CREATE16SDB(BLASTCMD.out.db_files,params.taxonomic_assignment.db_name)
+        MMSEQS_CREATE16SDB(BLASTCMD.out.db_files,params.mmseqs2_db_name)
 
-    }else if(params.taxonomic_assignment.download_db && params.taxonomic_assignment.db_name == 'silva'){
-        MMSEQS_CREATE16SDB([],params.taxonomic_assignment.db_name)
+    }else if(params.mmseqs2_download_db && params.mmseqs2_db_name == 'silva'){
+        MMSEQS_CREATE16SDB([],params.mmseqs2_db_name)
 
-    }else if(!params.taxonomic_assignment.download_db){
+    }else if(!params.mmseqs2_download_db){
         print("ToDo: completar")
-        ch_db_dir = Channel.fromPath(params.taxonomic_assignment.db_dir)
+        ch_db_dir = Channel.fromPath(params.mmseqs2_db_dir)
     }
     MMSEQS_EASYSEARCH(ch_input_tax,MMSEQS_CREATE16SDB.out.path_db)
     ch_versions = ch_versions.mix(MMSEQS_EASYSEARCH.out.versions.first())
@@ -124,13 +124,13 @@ workflow NANOTAX {
     
     // Diversity
     // ToDo: Solo si hay grupos
-    if(params.diversity.run){
+    if(!params.skip_diversity){
         ch_groups_info_all = MMSEQS_EASYSEARCH.out.tsv.map{meta,tsv -> "${meta.id}:${meta.group}:${meta.subgroup}:${meta.subsubgroup}"}.collect()
         DIVERSITY(MERGE_AND_GROUP_SAMPLES.out.csv_div_nreads,ch_groups_info_all)//ch_groups)
         ch_versions = ch_versions.mix(DIVERSITY.out.versions.first())
     }
     // Functional prediction
-    if(params.functional_pred.run){
+    if(params.skip_functional_prediction){
         ch_input_picrust = (SUMMARY_MMSEQS.out.abundance_picrust.join(ch_input_tax)).map{meta,tsv,fastq -> [tsv,fastq]}
         SEQKIT(ch_input_picrust) //ch_input_tax.map{meta, path -> path}.collect(),SUMMARY_MMSEQS.out.abundance_picrust.collect())
         PICRUST2(SEQKIT.out.abundance, SEQKIT.out.fasta)

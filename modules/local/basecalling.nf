@@ -1,8 +1,8 @@
 process BASECALLING {
     label 'dorado'
-    clusterOptions "--gres=gpu:${params.basecalling.gpus}"
-    cpus { 4 * params.basecalling.gpus }
-    memory "${16 * params.basecalling.gpus}G"
+    clusterOptions "--gres=gpu:${params.dorado_gpus}"
+    cpus { 4 * params.dorado_gpus }
+    memory "${16 * params.dorado_gpus}G"
 
     input:
       path(pod5_dir)
@@ -20,7 +20,7 @@ process BASECALLING {
     --recursive \
     --device 'cuda:all' \
     ${args} \
-    ${params.basecalling.dorado_basecalling_model} \
+    ${params.dorado_basecalling_model} \
     ${pod5_dir} \
   > basecalled.ubam
 
