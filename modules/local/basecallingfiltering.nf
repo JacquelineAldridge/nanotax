@@ -22,7 +22,7 @@ process BASECALLING_FILTERING {
     
     """
     samtools view \
-    -e '[qs] >= ${params.basecalling.qscore_filter}' ${ubam} \
+    -e '[qs] >= ${params.dorado_qscore_filter}' ${ubam} \
     --output ${ubam.baseName}.pass.ubam \
     --unoutput ${ubam.baseName}.fail.ubam \
     --bam \

@@ -14,7 +14,7 @@ process DEMULTIPLEXING {
       --output-dir demultiplexed/ \
       --emit-fastq \
       --threads ${task.cpus} \
-      --kit-name ${params.basecalling.barcoding_kit} \
+      --kit-name ${params.dorado_barcoding_kit} \
       ${basecalled_reads}
 
     """
