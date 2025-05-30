@@ -42,9 +42,6 @@
             }
         },
         "required": ["sample"],
-        "anyOf": [
-        { "required": ["barcode"] },
-        { "required": ["fastq"] }
-        ]
+        "anyOf": [{ "required": ["barcode"] }, { "required": ["fastq"] }]
     }
 }
