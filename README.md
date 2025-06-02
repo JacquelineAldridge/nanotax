@@ -67,44 +67,44 @@ nextflow run catg-umag/nanotax \
 ## Parameters
 ### General parameters
 The following parameters can be modified to enable or disable specific modules:
-| Parameter            | Type    | Description | Default |
-|----------------------|---------|-------------|---------|
-| skip_basecalling      | boolean | Enable run basecalling and demultiplexing | `false`
-| skip_qc               | boolean | Enable run quality check | `true`
-| skip_diversity        | boolean | Enable run diversity analysis module | `true` if samplesheet has groups
-| skip_functional_prediction  | boolean | Enable run functional prediction | `true` if samplesheet has groups
-| exclude               | list    | samples that are not included in the analyses, but their quality and quantity of readings information will be reported | []
+| Parameter                  | Type    | Description                                                                                                            | Default                          |
+| -------------------------- | ------- | ---------------------------------------------------------------------------------------------------------------------- | -------------------------------- |
+| skip_basecalling           | boolean | Enable run basecalling and demultiplexing                                                                              | `false`                          |
+| skip_qc                    | boolean | Enable run quality check                                                                                               | `true`                           |
+| skip_diversity             | boolean | Enable run diversity analysis module                                                                                   | `true` if samplesheet has groups |
+| skip_functional_prediction | boolean | Enable run functional prediction                                                                                       | `true` if samplesheet has groups |
+| exclude                    | list    | samples that are not included in the analyses, but their quality and quantity of readings information will be reported | []                               |
 
 Each module has specific parameters that can be configured when enabled.
 
 ### Basecalling module
-| Parameter            | Type    | Description | Default |
-|----------------------|---------|-------------|---------|
-| dorado_pod5_dir | string  | directory containing POD5 files | input/pod5
-| dorado_gpus     | integer | Number of GPUs to use | `1`
-| dorado_basecalling_model | string | Basecalling model to use  (fast, hac, sup) | `sup `
-| dorado_qscore_filter | integer | Q-score threshold for passing and failing reads | `10`
-| dorado_barcoding_kit | string | Barcoding kit used for multiplexing | `SQK-16S114-24`
-| dorado_save_reads | boolean | Save reads after basecalling and demultiplexing in the results directory | `false`
+| Parameter                | Type    | Description                                                              | Default         |
+| ------------------------ | ------- | ------------------------------------------------------------------------ | --------------- |
+| dorado_pod5_dir          | string  | directory containing POD5 files                                          | input/pod5      |
+| dorado_basecalling_gpus  | integer | Number of GPUs to use                                                    | `1`             |
+| dorado_basecalling_model | string  | Basecalling model to use  (fast, hac, sup)                               | `sup `          |
+| dorado_qscore_filter     | integer | Q-score threshold for passing and failing reads                          | `10`            |
+| dorado_barcoding_kit     | string  | Barcoding kit used for multiplexing                                      | `SQK-16S114-24` |
+| dorado_save_reads        | boolean | Save reads after basecalling and demultiplexing in the results directory | `false`         |
 
 ### QC module
-| Parameter            | Type    | Description | Default |
-|----------------------|---------|-------------|---------|
-| filtlong_sampling | integer | Number of reads to sampling | `100000`
-| nanoq_min_length  | integer | Minimum required length for a read |`1000`
-| nanoq_max_length  | integer | Maximum allowed length for a read | `2000`
-| nanoq_min_qscore  | integer | Minimum q-score | `15`
-| nanoq_save_reads  | boolean | Save reads after  quality control in the results directory | `false`
-| filtlong_save_reads  | boolean | Save reads after sampling in the results directory | `false`
+| Parameter           | Type    | Description                                                | Default  |
+| ------------------- | ------- | ---------------------------------------------------------- | -------- |
+| filtlong_sampling   | integer | Number of reads to sampling                                | `100000` |
+| nanoq_min_length    | integer | Minimum required length for a read                         | `1000`   |
+| nanoq_max_length    | integer | Maximum allowed length for a read                          | `2000`   |
+| nanoq_min_qscore    | integer | Minimum q-score                                            | `15`     |
+| nanoq_save_reads    | boolean | Save reads after  quality control in the results directory | `false`  |
+| filtlong_save_reads | boolean | Save reads after sampling in the results directory         | `false`  |
 
 ### Taxonomic assignment module
-| Parameter            | Type    | Description | Default |
-|----------------------|---------|-------------|---------|
-| mmseqs2_min_aln       | integer | Minimum alignment length to retain an alignment | `1000`
-| mmseqs2_min_identity  | integer | Minimum sequence identity between the read and database hit (range: 0–1) | `0.95`
-| mmseqs2_download_db   | boolean | Download the database from the internet | `true`
-| mmseqs2_db_name       | string  | Database name to use (genbank or silva) | `genbank`
-| mmseqs2_db_dir        | string  | Directory containing the database (required if download_db is false) | `` (empty)
+| Parameter            | Type    | Description                                                              | Default    |
+| -------------------- | ------- | ------------------------------------------------------------------------ | ---------- |
+| mmseqs2_min_aln      | integer | Minimum alignment length to retain an alignment                          | `1000`     |
+| mmseqs2_min_identity | integer | Minimum sequence identity between the read and database hit (range: 0–1) | `0.95`     |
+| mmseqs2_download_db  | boolean | Download the database from the internet                                  | `true`     |
+| mmseqs2_db_name      | string  | Database name to use (genbank or silva)                                  | `genbank`  |
+| mmseqs2_db_dir       | string  | Directory containing the database (required if download_db is false)     | `` (empty) |
 
 
 The diversity and functional prediction modules do not have specific parameters associated with them.

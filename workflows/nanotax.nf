@@ -3,7 +3,6 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { PIGZ                    } from '../modules/local/pigz'
 include { FASTQC                  } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                 } from '../modules/nf-core/multiqc/main'
 include { NANOQ as NANOQ_FILTER   } from '../modules/nf-core/nanoq/main'
@@ -24,7 +23,7 @@ include { MERGE_PICRUST_OUT       } from '../modules/local/mergepicrustout'
 include { LEFSE                   } from '../modules/local/lefse'
 include { PLOT_LEFSE              } from '../modules/local/plotlefse'
 
-include { BASECALLING             } from '../subworkflows/basecalling/main'
+include { BASECALLING             } from '../subworkflows/local/basecalling/main'
 
 include { paramsSummaryMap        } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc    } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -46,34 +45,22 @@ workflow NANOTAX {
     ch_versions = Channel.empty()
     ch_multiqc_files = Channel.empty()
 
+    /*
+     * Basecalling and demultiplexing using Dorado
+     */
     if (!params.skip_basecalling) {
         ch_pod5_dir = Channel.value(
-            file(params.dorado_pod5_dir, checkIfExists: true, type: 'dir')
+            [[id: 'reads'], file(params.dorado_pod5_dir, checkIfExists: true, type: 'dir')]
         )
 
         BASECALLING(ch_pod5_dir, ch_samplesheet)
+
+        ch_samples = BASECALLING.out.samples
         ch_versions = ch_versions.mix(BASECALLING.out.versions)
     }
-
-    // BASECALLING AND DEMUX
-    // if(!params.skip_basecalling){
-    //         ch_pod5_dir = Channel.fromPath(params.dorado_pod5_dir)
-    //         BASECALLING(ch_pod5_dir)
-    //         BASECALLING_FILTERING(BASECALLING.out.reads)
-    //         DEMULTIPLEXING(BASECALLING_FILTERING.out.reads_pass)
-    //         ch_demux = DEMULTIPLEXING.out.classified
-    //                         .flatten()
-    //                           .map { path -> def barcode = (path =~ /_(barcode\d+)\.fastq/)[0][1]
-    //                           return [barcode, path]}
-
-    //         ch_input_qc = ch_samplesheet.map{meta, barcode -> [barcode[0], meta]}.join(ch_demux).map{barcode, meta, fastq -> [meta, fastq]}
-    //         PIGZ(ch_input_qc)
-    //         ch_input_qc = PIGZ.out.fastq_comp
-
-    // }else{
-    //     ch_input_qc = ch_samplesheet
-    // }
-
+    else {
+        ch_samples = ch_samplesheet
+    }
 
     // // QC
     // if(!params.skip_qc){

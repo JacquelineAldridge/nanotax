@@ -2,19 +2,20 @@ process DORADO_BASECALLER {
     label 'process_long'
 
     container 'ghcr.io/dialvarezs/containers/dorado:1.0.0'
-    clusterOptions "--gres=gpu:${params.dorado_gpus}"
+    clusterOptions "--gres=gpu:${params.dorado_basecalling_gpus}"
     containerOptions { workflow.containerEngine == 'singularity' ? '--nv' : '' }
 
     input:
-    path pod5_dir
+    tuple val(meta), path(pod5_dir)
 
     output:
-    tuple val { [id: 'basecalled'] }, path('basecalled.ubam'), emit: reads
-    path 'sequencing_summary.txt', emit: sequencing_summary
+    tuple val(meta), path("${prefix}_basecalled.ubam"), emit: reads
+    tuple val(meta), path("${prefix}_sequencing_summary.txt"), emit: sequencing_summary
     path 'versions.yml', emit: versions
 
     script:
     def args = task.ext.args ?: ''
+    prefix = task.ext.prefix ?: "${meta.id}"
     """
     dorado basecaller \\
         --recursive \\
@@ -23,13 +24,13 @@ process DORADO_BASECALLER {
         ${args} \\
         ${params.dorado_basecalling_model} \\
         ${pod5_dir} \\
-    > basecalled.ubam
+    > ${prefix}_basecalled.ubam
 
-    dorado summary basecalled.ubam > sequencing_summary.txt
+    dorado summary ${prefix}_basecalled.ubam > ${prefix}_sequencing_summary.txt
 
     cat <<-END_VERSIONS > versions.yml
     "${task.process}":
-        fastqc: \$( dorado --version 2>&1 | tr -d '\n' )
+        dorado: \$( dorado --version 2>&1 )
     END_VERSIONS
     """
 }
