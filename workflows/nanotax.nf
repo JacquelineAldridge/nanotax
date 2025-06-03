@@ -22,6 +22,10 @@ include { PLOT_CORE              } from '../modules/local/plotcore'
 include { PLOT_TAXONOMY          } from '../modules/local/plottaxonomy'
 include { DIVERSITY              } from '../modules/local/diversity'
 include { SEQKIT                 } from '../modules/local/seqkit'
+include { SEQKIT_GREP            } from '../modules/nf-core/seqkit/grep'
+include { SEQKIT_SEQ             } from '../modules/nf-core/seqkit/seq'
+include { SEQKIT_FQ2FA           } from '../modules/nf-core/seqkit/fq2fa'
+include { OBTAIN_IDS             } from '../modules/local/obtainids'
 include { PICRUST2               } from '../modules/local/picrust2'
 include { MERGE_PICRUST_OUT      } from '../modules/local/mergepicrustout'
 include { LEFSE                  } from '../modules/local/lefse'
@@ -131,15 +135,28 @@ workflow NANOTAX {
     }
     // Functional prediction
     if(params.skip_functional_prediction){
-        ch_input_picrust = (SUMMARY_MMSEQS.out.abundance_picrust.join(ch_input_tax)).map{meta,tsv,fastq -> [tsv,fastq]}
-        SEQKIT(ch_input_picrust) //ch_input_tax.map{meta, path -> path}.collect(),SUMMARY_MMSEQS.out.abundance_picrust.collect())
-        PICRUST2(SEQKIT.out.abundance, SEQKIT.out.fasta)
-        ch_versions = ch_versions.mix(PICRUST2.out.versions.first())
 
+        OBTAIN_IDS(SUMMARY_MMSEQS.out.abundance_picrust)
+        ch_input_seqkit =  OBTAIN_IDS.out.abundance.join(ch_input_tax)
+                            .join(OBTAIN_IDS.out.ids)
+                            .multiMap{meta,tsv,fastq,ids ->
+                                sequences: [meta, fastq]
+                                ids: [ids]
+        }
+        SEQKIT_GREP(ch_input_seqkit.sequences,ch_input_seqkit.ids)
+        SEQKIT_FQ2FA(SEQKIT_GREP.out.filter)
+        SEQKIT_SEQ(SEQKIT_FQ2FA.out.fasta)
+        ch_input_picrust = OBTAIN_IDS.out.abundance.join( SEQKIT_SEQ.out.fastx)
+                            .multiMap{meta,abundance_table,fasta->
+                            abundance_table: [meta, abundance_table]
+                            fasta: [fasta]
+                            }
+        PICRUST2(ch_input_picrust.abundance_table,ch_input_picrust.fasta) 
+        ch_versions = ch_versions.mix(PICRUST2.out.versions.first())
         MERGE_PICRUST_OUT(PICRUST2.out.dir.collect(), ch_groups)
         LEFSE(MERGE_PICRUST_OUT.out.lefse_input.flatten())
-        PLOT_LEFSE(LEFSE.out.lefse_output.flatten())
-        // ToDo:LEFSE SOLO SI HAY GRUPOS
+
+        // ToDo:LEFSE: SOLO SI HAY GRUPOS ; version
     }  
 
     // Collate and save software versions
