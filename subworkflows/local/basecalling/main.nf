@@ -7,8 +7,9 @@ include { DORADO_DEMUX                         } from '../../../modules/local/do
 
 workflow BASECALLING {
     take:
-    ch_pod5_dir // channel: [ val(meta), path(pod5_dir) ]
-    ch_samples  // channel: [ val(meta), path(fastq) ]
+    ch_pod5_dir              // channel: [ val(meta), path(pod5_dir) ]
+    ch_samples               // channel: [ val(meta), path(fastq) ]
+    val_dorado_barcoding_kit // string: dorado barcoding kit name
 
     main:
     ch_versions = Channel.empty()
@@ -22,16 +23,20 @@ workflow BASECALLING {
         [],
     )
 
-    sample_sheet = ch_samples
+    val_sample_sheet = ch_samples
         .collectFile(name: 'sample_sheet.csv', keepHeader: true) { meta, _fastq ->
             [
                 "alias,barcode,kit,experiment_id,position_id\n",
-                "${meta.id},${meta.barcode},${params.dorado_barcoding_kit},,\n",
+                "${meta.id},${meta.barcode},${val_dorado_barcoding_kit},,\n",
             ].join('')
         }
         .first()
 
-    DORADO_DEMUX(DORADO_BASECALLER.out.reads, sample_sheet)
+    DORADO_DEMUX(
+        DORADO_BASECALLER.out.reads,
+        val_sample_sheet,
+        val_dorado_barcoding_kit,
+    )
 
 
     ch_samples_with_sequences = DORADO_DEMUX.out.classified
@@ -53,6 +58,6 @@ workflow BASECALLING {
     )
 
     emit:
-    samples = COMPRESS_CLASSIFIED.out.archive
+    samples  = COMPRESS_CLASSIFIED.out.archive
     versions = ch_versions
 }

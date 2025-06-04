@@ -3,12 +3,7 @@
     IMPORT MODULES / SUBWORKFLOWS / FUNCTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
-include { FASTQC                  } from '../modules/nf-core/fastqc/main'
 include { MULTIQC                 } from '../modules/nf-core/multiqc/main'
-include { NANOQ as NANOQ_FILTER   } from '../modules/nf-core/nanoq/main'
-include { NANOQ as NANOQ_QC_RAW   } from '../modules/nf-core/nanoq/main'
-include { PLOT_QUALITY            } from '../modules/local/plotquality'
-include { FILTLONG                } from '../modules/nf-core/filtlong/main'
 include { BLAST as BLASTCMD       } from '../modules/local/blast'
 include { MMSEQS_CREATE16SDB      } from '../modules/local/mmseqs/create16sdb'
 include { MMSEQS_EASYSEARCH       } from '../modules/nf-core/mmseqs/easysearch'
@@ -24,6 +19,7 @@ include { LEFSE                   } from '../modules/local/lefse'
 include { PLOT_LEFSE              } from '../modules/local/plotlefse'
 
 include { BASECALLING             } from '../subworkflows/local/basecalling/main'
+include { QUALITY_CONTROL         } from '../subworkflows/local/quality_control/main'
 
 include { paramsSummaryMap        } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc    } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -53,7 +49,7 @@ workflow NANOTAX {
             [[id: 'reads'], file(params.dorado_pod5_dir, checkIfExists: true, type: 'dir')]
         )
 
-        BASECALLING(ch_pod5_dir, ch_samplesheet)
+        BASECALLING(ch_pod5_dir, ch_samplesheet, params.dorado_barcoding_kit)
 
         ch_samples = BASECALLING.out.samples
         ch_versions = ch_versions.mix(BASECALLING.out.versions)
@@ -62,33 +58,12 @@ workflow NANOTAX {
         ch_samples = ch_samplesheet
     }
 
-    // // QC
-    // if(!params.skip_qc){
-    //     FASTQC (
-    //         ch_input_qc
-    //     )
-
-    //     NANOQ_FILTER(ch_input_qc,'fastq.gz')
-    //     NANOQ_QC_RAW(ch_input_qc,'fastq.gz')
-
-    //     if(params.filtlong_sampling>0){
-    //         ch_mix = NANOQ_FILTER.out.reads.map{it -> [it[0],[],it[1]]}
-    //         FILTLONG(ch_mix)
-    //         ch_input_tax = FILTLONG.out.reads
-    //         ch_versions = ch_versions.mix(FILTLONG.out.versions.first())
-    //     }else{
-    //         ch_input_tax = NANOQ_FILTER.out.reads
-
-    //     }
-    //     ch_multiqc_files = ch_multiqc_files.mix(FASTQC.out.zip.collect{it[1]},NANOQ_QC_RAW.out.stats.collect{it[1]},NANOQ_FILTER.out.stats.collect{it[1]})
-    //     ch_versions = ch_versions.mix(FASTQC.out.versions.first(),NANOQ_FILTER.out.versions.first())
-    //     PLOT_QUALITY(NANOQ_FILTER.out.reads.map(it -> it[1]).collect())
-    //     ch_input_tax = ch_input_tax.filter { meta, fastq -> !(params.exclude).contains(meta.id)}
-
-    // }else{
-    //     ch_input_tax = ch_input_qc
-    //     ch_input_tax = ch_input_tax.filter { meta, fastq -> !(params.exclude).contains(meta.id)}
-    // }
+    /*
+     * Quality control and filtering
+     */
+    if (!params.skip_qc) {
+        QUALITY_CONTROL(ch_samples, params.filtlong_sampling)
+    }
 
     // // Taxonomic assignment
     // if(params.mmseqs2_download_db && params.mmseqs2_db_name == 'genbank'){

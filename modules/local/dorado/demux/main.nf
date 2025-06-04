@@ -6,6 +6,7 @@ process DORADO_DEMUX {
     input:
     tuple val(meta), path(basecalled_reads)
     path sample_sheet
+    val kit_name
 
     output:
     tuple val(meta), path('demultiplexed/*[!unclassified].fastq'), emit: classified
@@ -22,7 +23,7 @@ process DORADO_DEMUX {
         --emit-fastq \\
         --emit-summary \\
         --threads ${task.cpus} \\
-        --kit-name ${params.dorado_barcoding_kit} \\
+        --kit-name ${kit_name} \\
         ${sample_sheet_arg} \\
         ${basecalled_reads} \\
         ${args}
