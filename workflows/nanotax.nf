@@ -9,14 +9,18 @@ include { MMSEQS_CREATE16SDB      } from '../modules/local/mmseqs/create16sdb'
 include { MMSEQS_EASYSEARCH       } from '../modules/nf-core/mmseqs/easysearch'
 include { SUMMARY_MMSEQS          } from '../modules/local/summarymmseqs'
 include { MERGE_AND_GROUP_SAMPLES } from '../modules/local/mergeandgroupsamples'
-include { PLOT_CORE               } from '../modules/local/plotcore'
-include { PLOT_TAXONOMY           } from '../modules/local/plottaxonomy'
-include { DIVERSITY               } from '../modules/local/diversity'
-include { SEQKIT                  } from '../modules/local/seqkit'
-include { PICRUST2                } from '../modules/local/picrust2'
-include { MERGE_PICRUST_OUT       } from '../modules/local/mergepicrustout'
-include { LEFSE                   } from '../modules/local/lefse'
-include { PLOT_LEFSE              } from '../modules/local/plotlefse'
+include { PLOT_CORE              } from '../modules/local/plotcore'
+include { PLOT_TAXONOMY          } from '../modules/local/plottaxonomy'
+include { DIVERSITY              } from '../modules/local/diversity'
+include { SEQKIT                 } from '../modules/local/seqkit'
+include { SEQKIT_GREP            } from '../modules/nf-core/seqkit/grep'
+include { SEQKIT_SEQ             } from '../modules/nf-core/seqkit/seq'
+include { SEQKIT_FQ2FA           } from '../modules/nf-core/seqkit/fq2fa'
+include { OBTAIN_IDS             } from '../modules/local/obtainids'
+include { PICRUST2               } from '../modules/local/picrust2'
+include { MERGE_PICRUST_OUT      } from '../modules/local/mergepicrustout'
+include { LEFSE                  } from '../modules/local/lefse'
+include { PLOT_LEFSE             } from '../modules/local/plotlefse'
 
 include { BASECALLING             } from '../subworkflows/local/basecalling/main'
 include { QUALITY_CONTROL         } from '../subworkflows/local/quality_control/main'
@@ -72,6 +76,20 @@ workflow NANOTAX {
 
     // }else if(params.mmseqs2_download_db && params.mmseqs2_db_name == 'silva'){
     //     MMSEQS_CREATE16SDB([],params.mmseqs2_db_name)
+    // Plots for Taxonomic assignment
+    // ch_groups = ch_samplesheet.map{meta,path-> "${meta.id}:${meta.group}"}.collect()
+    // PLOT_TAXONOMY((MERGE_AND_GROUP_SAMPLES.out.csv_sample.mix(MERGE_AND_GROUP_SAMPLES.out.csv_group)).flatten()) //csv_group
+    // PLOT_CORE(MERGE_AND_GROUP_SAMPLES.out.csv_core,SUMMARY_MMSEQS.out.taxlineage.collect(),ch_groups)
+
+    // // Diversity
+    // // ToDo: Solo si hay grupos
+    // if(!params.skip_diversity){
+    //     ch_groups_info_all = MMSEQS_EASYSEARCH.out.tsv.map{meta,tsv -> "${meta.id}:${meta.group}:${meta.subgroup}:${meta.subsubgroup}"}.collect()
+    //     DIVERSITY(MERGE_AND_GROUP_SAMPLES.out.csv_div_nreads,ch_groups_info_all)//ch_groups)
+    //     ch_versions = ch_versions.mix(DIVERSITY.out.versions.first())
+    // }
+    // Functional prediction
+    // if(params.skip_functional_prediction){
 
     // }else if(!params.mmseqs2_download_db){
     //     print("ToDo: completar")
@@ -110,6 +128,28 @@ workflow NANOTAX {
     //     LEFSE(MERGE_PICRUST_OUT.out.lefse_input.flatten())
     //     PLOT_LEFSE(LEFSE.out.lefse_output.flatten())
     //     // ToDo:LEFSE SOLO SI HAY GRUPOS
+    // }
+    //     OBTAIN_IDS(SUMMARY_MMSEQS.out.abundance_picrust)
+    //     ch_input_seqkit =  OBTAIN_IDS.out.abundance.join(ch_input_tax)
+    //                         .join(OBTAIN_IDS.out.ids)
+    //                         .multiMap{meta,tsv,fastq,ids ->
+    //                             sequences: [meta, fastq]
+    //                             ids: [ids]
+    //     }
+    //     SEQKIT_GREP(ch_input_seqkit.sequences,ch_input_seqkit.ids)
+    //     SEQKIT_FQ2FA(SEQKIT_GREP.out.filter)
+    //     SEQKIT_SEQ(SEQKIT_FQ2FA.out.fasta)
+    //     ch_input_picrust = OBTAIN_IDS.out.abundance.join( SEQKIT_SEQ.out.fastx)
+    //                         .multiMap{meta,abundance_table,fasta->
+    //                         abundance_table: [meta, abundance_table]
+    //                         fasta: [fasta]
+    //                         }
+    //     PICRUST2(ch_input_picrust.abundance_table,ch_input_picrust.fasta)
+    //     ch_versions = ch_versions.mix(PICRUST2.out.versions.first())
+    //     MERGE_PICRUST_OUT(PICRUST2.out.dir.collect(), ch_groups)
+    //     LEFSE(MERGE_PICRUST_OUT.out.lefse_input.flatten())
+
+    //     // ToDo:LEFSE: SOLO SI HAY GRUPOS ; version
     // }
 
     // Collate and save software versions
