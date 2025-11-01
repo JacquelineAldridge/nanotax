@@ -1,7 +1,7 @@
 process DORADO_DEMUX {
     label 'process_medium'
 
-    container 'ghcr.io/dialvarezs/containers/dorado:1.0.0'
+    container 'ghcr.io/dialvarezs/containers/dorado:1.2.0'
 
     input:
     tuple val(meta), path(basecalled_reads)
@@ -9,8 +9,8 @@ process DORADO_DEMUX {
     val kit_name
 
     output:
-    tuple val(meta), path('demultiplexed/*[!unclassified].fastq'), emit: classified
-    tuple val(meta), path('demultiplexed/*unclassified.fastq'), emit: unclassified
+    tuple val(meta), path('demultiplexed/**/*[!unclassified].fastq'), emit: classified
+    tuple val(meta), path('demultiplexed/**/*unclassified*.fastq'), emit: unclassified
     tuple val(meta), path('demultiplexed/barcoding_summary.txt'), emit: summary
     path 'versions.yml', emit: versions
 

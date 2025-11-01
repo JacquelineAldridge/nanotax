@@ -2,7 +2,7 @@ process DORADO_BASECALLER {
     label 'process_long'
     label 'process_gpu'
 
-    container 'ghcr.io/dialvarezs/containers/dorado:1.0.0'
+    container 'ghcr.io/dialvarezs/containers/dorado:1.2.0'
     clusterOptions "--gres=gpu:${params.dorado_basecalling_gpus}"
 
     input:
