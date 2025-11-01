@@ -1,14 +1,22 @@
-include { OSFCLIENT_FETCH } from '../../../modules/nf-core/osfclient/fetch/main'
-include { UNTAR           } from '../../../modules/nf-core/untar/main'
+include { ARIA2 as TAXDUMP_DOWNLOAD       } from '../../../modules/nf-core/aria2/main'
+include { BLAST_BLASTDBCMD                } from '../../../modules/nf-core/blast/blastdbcmd/main'
+include { BLAST_UPDATEBLASTDB             } from '../../../modules/nf-core/blast/updateblastdb/main'
+include { MMSEQS_CREATEDB                 } from '../../../modules/nf-core/mmseqs/createdb/main'
+include { MMSEQS_CREATEINDEX              } from '../../../modules/nf-core/mmseqs/createindex/main'
+include { OSFCLIENT_FETCH as EMU_DB_FETCH } from '../../../modules/nf-core/osfclient/fetch/main'
+include { UNTAR as EMU_DB_UNTAR           } from '../../../modules/nf-core/untar/main'
+include { UNTAR as TAXDUMP_UNTAR          } from '../../../modules/nf-core/untar/main'
 
 workflow PREPARE_DATABASES {
     take:
-    val_skip_emu
     emu_db_name
+    val_skip_emu
+    val_skip_mmseqs2
 
     main:
     ch_versions = channel.empty()
     ch_emu_db = channel.empty()
+    ch_mmseqs2_db = channel.empty()
 
     if (!val_skip_emu) {
         db_paths = [
@@ -17,20 +25,51 @@ workflow PREPARE_DATABASES {
             'silva': 'osfstorage/emu-prebuilt/silva_database.tar.gz',
         ]
 
-        OSFCLIENT_FETCH(
+        EMU_DB_FETCH(
             [
                 [id: "emu_database_${emu_db_name}"],
                 '56uf7',
                 db_paths[emu_db_name],
             ]
         )
-        ch_versions = ch_versions.mix(OSFCLIENT_FETCH.out.versions)
+        ch_versions = ch_versions.mix(EMU_DB_FETCH.out.versions)
 
-        UNTAR(OSFCLIENT_FETCH.out.download_files)
+        EMU_DB_UNTAR(EMU_DB_FETCH.out.download_files)
+        ch_versions = ch_versions.mix(EMU_DB_UNTAR.out.versions)
 
-        ch_emu_db = UNTAR.out.untar.map { _meta, file -> file }
+        ch_emu_db = EMU_DB_UNTAR.out.untar.map { _meta, file -> file }
+    }
+
+    if (!val_skip_mmseqs2) {
+        BLAST_UPDATEBLASTDB([[id: '16S_ribosomal_RNA'], '16S_ribosomal_RNA'])
+        ch_versions = ch_versions.mix(BLAST_UPDATEBLASTDB.out.versions)
+
+        BLAST_BLASTDBCMD(
+            [[id: '16S_genbank'], 'all', []],
+            BLAST_UPDATEBLASTDB.out.db,
+        )
+        ch_versions = ch_versions.mix(BLAST_BLASTDBCMD.out.versions)
+
+        MMSEQS_CREATEDB(BLAST_BLASTDBCMD.out.fasta)
+        ch_versions = ch_versions.mix(MMSEQS_CREATEDB.out.versions)
+
+        MMSEQS_CREATEINDEX(MMSEQS_CREATEDB.out.db)
+        ch_versions = ch_versions.mix(MMSEQS_CREATEINDEX.out.versions)
+
+        TAXDUMP_DOWNLOAD(
+            [
+                [id: 'taxdump'],
+                'https://ftp.ncbi.nlm.nih.gov/pub/taxonomy/new_taxdump/new_taxdump.tar.gz',
+            ]
+        )
+        ch_versions = ch_versions.mix(TAXDUMP_DOWNLOAD.out.versions)
+
+        TAXDUMP_UNTAR(TAXDUMP_DOWNLOAD.out.downloaded_file)
+        ch_versions = ch_versions.mix(TAXDUMP_UNTAR.out.versions)
     }
 
     emit:
-    emu_database = ch_emu_db
+    emu_database     = ch_emu_db
+    mmseqs2_database = ch_mmseqs2_db
+    versions         = ch_versions
 }
