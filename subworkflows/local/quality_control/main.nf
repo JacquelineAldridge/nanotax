@@ -11,8 +11,8 @@ workflow QUALITY_CONTROL {
     filtlong_sampling // float: sampling rate for filtlong, 0 to disable
 
     main:
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
+    ch_versions = channel.empty()
+    ch_multiqc_files = channel.empty()
 
 
     NANOQ_FILTER(ch_reads, 'fastq.gz')
@@ -35,7 +35,7 @@ workflow QUALITY_CONTROL {
     NANOQ_QC(ch_reads.mix(ch_reads_filtered_suffix), 'fastq.gz')
     FASTQC(ch_reads.mix(ch_reads_filtered_suffix))
 
-    PLOT_QUALITY(NANOQ_FILTER.out.reads.collect { it[1] })
+    PLOT_QUALITY(NANOQ_FILTER.out.reads.collect { _meta, file -> file })
 
 
     ch_versions = ch_versions.mix(
@@ -44,9 +44,9 @@ workflow QUALITY_CONTROL {
         NANOQ_FILTER.out.versions.first(),
     )
     ch_multiqc_files = ch_multiqc_files.mix(
-        FASTQC.out.zip.collect { it[1] },
-        NANOQ_QC.out.stats.collect { it[1] },
-        NANOQ_FILTER.out.stats.collect { it[1] },
+        FASTQC.out.zip.collect { _meta, file -> file },
+        NANOQ_QC.out.stats.collect { _meta, file -> file },
+        NANOQ_FILTER.out.stats.collect { _meta, file -> file },
     )
 
     emit:

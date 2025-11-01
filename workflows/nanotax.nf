@@ -42,14 +42,14 @@ workflow NANOTAX {
 
     main:
 
-    ch_versions = Channel.empty()
-    ch_multiqc_files = Channel.empty()
+    ch_versions = channel.empty()
+    ch_multiqc_files = channel.empty()
 
     /*
      * Basecalling and demultiplexing using Dorado
      */
     if (!params.skip_basecalling) {
-        ch_pod5_dir = Channel.value(
+        ch_pod5_dir = channel.value(
             [[id: 'reads'], file(params.dorado_pod5_dir, checkIfExists: true, type: 'dir')]
         )
 
@@ -121,7 +121,7 @@ workflow NANOTAX {
     // if(params.skip_functional_prediction){
     //     ch_input_picrust = (SUMMARY_MMSEQS.out.abundance_picrust.join(ch_input_tax)).map{meta,tsv,fastq -> [tsv,fastq]}
     //     SEQKIT(ch_input_picrust) //ch_input_tax.map{meta, path -> path}.collect(),SUMMARY_MMSEQS.out.abundance_picrust.collect())
-    //     PICRUST2(SEQKIT.out.abundance, SEQKIT.out.fasta)
+    //     (SEQKIT.out.abundance, SEQKIT.out.fasta)
     //     ch_versions = ch_versions.mix(PICRUST2.out.versions.first())
 
     //     MERGE_PICRUST_OUT(PICRUST2.out.dir.collect(), ch_groups)

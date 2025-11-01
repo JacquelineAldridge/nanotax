@@ -12,7 +12,7 @@ workflow BASECALLING {
     val_dorado_barcoding_kit // string: dorado barcoding kit name
 
     main:
-    ch_versions = Channel.empty()
+    ch_versions = channel.empty()
 
     DORADO_BASECALLER(ch_pod5_dir)
 
