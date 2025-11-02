@@ -4,27 +4,26 @@
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 */
 include { MULTIQC                 } from '../modules/nf-core/multiqc/main'
-include { BLAST as BLASTCMD       } from '../modules/local/blast'
-include { MMSEQS_CREATE16SDB      } from '../modules/local/mmseqs/create16sdb'
 include { MMSEQS_EASYSEARCH       } from '../modules/nf-core/mmseqs/easysearch'
 include { SUMMARY_MMSEQS          } from '../modules/local/summarymmseqs'
 include { MERGE_AND_GROUP_SAMPLES } from '../modules/local/mergeandgroupsamples'
-include { PLOT_CORE              } from '../modules/local/plotcore'
-include { PLOT_TAXONOMY          } from '../modules/local/plottaxonomy'
-include { DIVERSITY              } from '../modules/local/diversity'
-include { SEQKIT                 } from '../modules/local/seqkit'
-include { SEQKIT_GREP            } from '../modules/nf-core/seqkit/grep'
-include { SEQKIT_SEQ             } from '../modules/nf-core/seqkit/seq'
-include { SEQKIT_FQ2FA           } from '../modules/nf-core/seqkit/fq2fa'
-include { OBTAIN_IDS             } from '../modules/local/obtainids'
-include { PICRUST2               } from '../modules/local/picrust2'
-include { MERGE_PICRUST_OUT      } from '../modules/local/mergepicrustout'
-include { LEFSE                  } from '../modules/local/lefse'
-include { PLOT_LEFSE             } from '../modules/local/plotlefse'
+include { PLOT_CORE               } from '../modules/local/plotcore'
+include { PLOT_TAXONOMY           } from '../modules/local/plottaxonomy'
+include { DIVERSITY               } from '../modules/local/diversity'
+include { SEQKIT                  } from '../modules/local/seqkit'
+include { SEQKIT_GREP             } from '../modules/nf-core/seqkit/grep'
+include { SEQKIT_SEQ              } from '../modules/nf-core/seqkit/seq'
+include { SEQKIT_FQ2FA            } from '../modules/nf-core/seqkit/fq2fa'
+include { OBTAIN_IDS              } from '../modules/local/obtainids'
+include { PICRUST2                } from '../modules/local/picrust2'
+include { MERGE_PICRUST_OUT       } from '../modules/local/mergepicrustout'
+include { LEFSE                   } from '../modules/local/lefse'
+include { PLOT_LEFSE              } from '../modules/local/plotlefse'
 
 include { BASECALLING             } from '../subworkflows/local/basecalling/main'
 include { PREPARE_DATABASES       } from '../subworkflows/local/prepare_databases/main'
 include { QUALITY_CONTROL         } from '../subworkflows/local/quality_control/main'
+include { TAXONOMIC_ASSIGNMENT    } from '../subworkflows/local/taxonomic_assignment/main'
 
 include { paramsSummaryMap        } from 'plugin/nf-schema'
 include { paramsSummaryMultiqc    } from '../subworkflows/nf-core/utils_nfcore_pipeline'
@@ -50,8 +49,9 @@ workflow NANOTAX {
      * Database preparation
      */
     PREPARE_DATABASES(
-        params.skip_emu,
         params.emu_database,
+        params.skip_emu,
+        params.skip_mmseqs2,
     )
 
     /*
@@ -77,6 +77,17 @@ workflow NANOTAX {
     if (!params.skip_qc) {
         QUALITY_CONTROL(ch_samples, params.filtlong_sampling)
     }
+
+    /*
+     * Taxonomic assignment
+     */
+    TAXONOMIC_ASSIGNMENT(
+        QUALITY_CONTROL.out.reads,
+        PREPARE_DATABASES.out.emu_database,
+        PREPARE_DATABASES.out.mmseqs2_database,
+        params.skip_emu,
+        params.skip_mmseqs2,
+    )
 
     // // Taxonomic assignment
     // if(params.mmseqs2_download_db && params.mmseqs2_db_name == 'genbank'){

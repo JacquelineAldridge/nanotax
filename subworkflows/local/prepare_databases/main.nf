@@ -40,7 +40,7 @@ workflow PREPARE_DATABASES {
         EMU_DB_UNTAR(EMU_DB_FETCH.out.download_files)
         ch_versions = ch_versions.mix(EMU_DB_UNTAR.out.versions)
 
-        ch_emu_db = EMU_DB_UNTAR.out.untar.map { _meta, file -> file }
+        ch_emu_db = EMU_DB_UNTAR.out.untar
     }
 
     if (!val_skip_mmseqs2) {
@@ -82,7 +82,7 @@ workflow PREPARE_DATABASES {
         )
         ch_versions = ch_versions.mix(MMSEQS_CREATETAXDB.out.versions)
 
-        ch_mmseqs2_db = MMSEQS_CREATETAXDB.out.db_with_taxonomy.map { _meta, file -> file }
+        ch_mmseqs2_db = MMSEQS_CREATETAXDB.out.db_with_taxonomy
     }
 
     emit:

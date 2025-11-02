@@ -20,7 +20,7 @@ MINIMUM_TAXA_PERCENTAGE = 0.01
 
 def main(argv=None):
     args = parse_args(argv)
-    last_tax_level = "species"
+    last_tax_level = "species"  # TODO: make this configurable
     tax_levels = TAX_LEVELS[: TAX_LEVELS.index(last_tax_level) + 1]
 
     ldf = load_mmseqs_file(args.mmseqs_tsv, args.min_identity, args.min_aln, tax_levels)
@@ -160,7 +160,7 @@ def main(argv=None):
 
     # Picrust input
     (
-        df_final.select(["query"])
+        df_final.select("query")
         .with_columns(pl.lit(1).alias(args.sample))
         .write_csv(f"reads_{args.sample}.tsv", separator="\t", include_header=True)
     )
