@@ -15,7 +15,6 @@ include { SEQKIT_GREP             } from '../modules/nf-core/seqkit/grep'
 include { SEQKIT_SEQ              } from '../modules/nf-core/seqkit/seq'
 include { SEQKIT_FQ2FA            } from '../modules/nf-core/seqkit/fq2fa'
 include { OBTAIN_IDS              } from '../modules/local/obtainids'
-include { PICRUST2                } from '../modules/local/picrust2'
 include { MERGE_PICRUST_OUT       } from '../modules/local/mergepicrustout'
 include { LEFSE                   } from '../modules/local/lefse'
 include { PLOT_LEFSE              } from '../modules/local/plotlefse'
@@ -49,7 +48,8 @@ workflow NANOTAX {
      * Database preparation
      */
     PREPARE_DATABASES(
-        params.emu_database,
+        params.emu_db_name,
+        params.mmseqs2_db_name,
         params.skip_emu,
         params.skip_mmseqs2,
     )
@@ -90,31 +90,6 @@ workflow NANOTAX {
     )
 
     // // Taxonomic assignment
-    // if(params.mmseqs2_download_db && params.mmseqs2_db_name == 'genbank'){
-    //     BLASTCMD()
-    //     MMSEQS_CREATE16SDB(BLASTCMD.out.db_files,params.mmseqs2_db_name)
-
-    // }else if(params.mmseqs2_download_db && params.mmseqs2_db_name == 'silva'){
-    //     MMSEQS_CREATE16SDB([],params.mmseqs2_db_name)
-    // Plots for Taxonomic assignment
-    // ch_groups = ch_samplesheet.map{meta,path-> "${meta.id}:${meta.group}"}.collect()
-    // PLOT_TAXONOMY((MERGE_AND_GROUP_SAMPLES.out.csv_sample.mix(MERGE_AND_GROUP_SAMPLES.out.csv_group)).flatten()) //csv_group
-    // PLOT_CORE(MERGE_AND_GROUP_SAMPLES.out.csv_core,SUMMARY_MMSEQS.out.taxlineage.collect(),ch_groups)
-
-    // // Diversity
-    // // ToDo: Solo si hay grupos
-    // if(!params.skip_diversity){
-    //     ch_groups_info_all = MMSEQS_EASYSEARCH.out.tsv.map{meta,tsv -> "${meta.id}:${meta.group}:${meta.subgroup}:${meta.subsubgroup}"}.collect()
-    //     DIVERSITY(MERGE_AND_GROUP_SAMPLES.out.csv_div_nreads,ch_groups_info_all)//ch_groups)
-    //     ch_versions = ch_versions.mix(DIVERSITY.out.versions.first())
-    // }
-    // Functional prediction
-    // if(params.skip_functional_prediction){
-
-    // }else if(!params.mmseqs2_download_db){
-    //     print("ToDo: completar")
-    //     ch_db_dir = Channel.fromPath(params.mmseqs2_db_dir)
-    // }
     // MMSEQS_EASYSEARCH(ch_input_tax,MMSEQS_CREATE16SDB.out.path_db)
     // ch_versions = ch_versions.mix(MMSEQS_EASYSEARCH.out.versions.first())
 

@@ -2,7 +2,7 @@
 # /// script
 # requires-python = ">=3.13,<3.14"
 # dependencies = [
-#     "polars==1.34.0",
+#     "polars==1.35.1",
 # ]
 # ///
 """Provide a command line tool to generate stacked plot from taxonomies."""
